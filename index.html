@@ -7,418 +7,303 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #0d0d0f;
-    --surface: #16161a;
-    --border: #2a2a30;
-    --text: #e8e8f0;
-    --muted: #666678;
-    --accent: #e8ff47;
+  :root { 
+    --bg: #0d0d0f; 
+    --surface: #16161a; 
+    --border: #2a2a30; 
+    --text: #e8e8f0; 
+    --muted: #666678; 
+    --accent: #e8ff47; 
+    --stop: #ff4444; 
   }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'IBM Plex Mono', monospace;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+  body { 
+    background: var(--bg); 
+    color: var(--text); 
+    font-family: 'IBM Plex Mono', monospace; 
+    height: 100vh; 
+    display: flex; 
+    flex-direction: column; 
+    overflow: hidden; 
   }
 
-  header {
-    padding: 18px 28px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-shrink: 0;
+  header { 
+    padding: 18px 28px; 
+    border-bottom: 1px solid var(--border); 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between;
+    flex-shrink: 0; 
   }
+  header h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--accent); letter-spacing: -0.02em; }
+  #status-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
 
-  header h1 {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1.1rem;
-    letter-spacing: -0.02em;
-    color: var(--accent);
+  .topic-bar { 
+    padding: 16px 28px; 
+    border-bottom: 1px solid var(--border); 
+    display: flex; 
+    gap: 10px; 
+    background: var(--surface); 
+    align-items: center; 
   }
+  
+  /* SQUARE THE UNIVERSE (NO ROUNDED CORNERS) */
+  .topic-bar input, .mode-select, .topic-bar button, .avatar { border-radius: 0px !important; }
 
-  header span {
-    font-size: 0.72rem;
-    color: var(--muted);
-    margin-left: auto;
-  }
-
-  .topic-bar {
-    padding: 16px 28px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    gap: 10px;
-    flex-shrink: 0;
-    background: var(--surface);
-  }
-
-  .topic-bar input {
-    flex: 1;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.85rem;
-    padding: 10px 14px;
+  .mode-select { 
+    background: var(--bg); 
+    border: 1px solid var(--border); 
+    color: var(--text); 
+    font-family: 'IBM Plex Mono'; 
+    font-size: 0.75rem; 
+    padding: 10px; 
+    cursor: pointer; 
     outline: none;
-    transition: border-color 0.2s;
   }
+  .mode-select:focus { border-color: var(--accent); }
 
+  .topic-bar input { 
+    flex: 1; 
+    background: var(--bg); 
+    border: 1px solid var(--border); 
+    color: var(--text); 
+    padding: 10px 14px; 
+    outline: none; 
+    font-family: 'IBM Plex Mono';
+  }
   .topic-bar input:focus { border-color: var(--accent); }
-  .topic-bar input::placeholder { color: var(--muted); }
 
-  .topic-bar button {
-    background: var(--accent);
-    color: #0d0d0f;
-    border: none;
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 0.85rem;
-    padding: 10px 22px;
-    cursor: pointer;
-    transition: opacity 0.15s, transform 0.1s;
-    letter-spacing: 0.03em;
+  .topic-bar button { 
+    background: var(--accent); 
+    color: #000; 
+    border: none; 
+    font-family: 'Syne';
+    font-weight: 700; 
+    padding: 10px 22px; 
+    cursor: pointer; 
+    transition: 0.2s;
   }
+  .topic-bar button:hover { opacity: 0.8; }
+  .topic-bar button:disabled { opacity: 0.3; cursor: not-allowed; }
 
-  .topic-bar button:hover { opacity: 0.85; }
-  .topic-bar button:active { transform: scale(0.97); }
-  .topic-bar button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  #stop-btn { background: var(--stop); color: #fff; display: none; }
 
-  .chat-area {
-    flex: 1;
-    overflow-y: auto;
-    padding: 24px 28px;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
+  .chat-area { 
+    flex: 1; 
+    overflow-y: auto; 
+    padding: 24px 28px; 
+    display: flex; 
+    flex-direction: column; 
     scroll-behavior: smooth;
   }
-
   .chat-area::-webkit-scrollbar { width: 4px; }
-  .chat-area::-webkit-scrollbar-track { background: transparent; }
   .chat-area::-webkit-scrollbar-thumb { background: var(--border); }
 
-  .msg {
-    display: flex;
-    gap: 14px;
-    padding: 14px 0;
-    border-bottom: 1px solid #1c1c22;
-    animation: fadeUp 0.3s ease forwards;
-    opacity: 0;
+  .msg { 
+    display: flex; 
+    gap: 14px; 
+    padding: 20px 0; 
+    border-bottom: 1px solid #1c1c22; 
+    animation: fadeUp 0.4s ease; 
   }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 0.75rem;
-    flex-shrink: 0;
-    margin-top: 2px;
+  .avatar { 
+    width: 40px; 
+    height: 40px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-family: 'Syne'; 
+    font-weight: 800; 
+    flex-shrink: 0; 
+    border: 1px solid; 
+    font-size: 0.8rem;
+    background: rgba(255,255,255,0.03);
   }
 
   .msg-body { flex: 1; min-width: 0; }
+  .msg-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .msg-name { font-family: 'Syne'; font-weight: 700; font-size: 0.85rem; }
+  .msg-text { font-size: 0.85rem; line-height: 1.7; color: #d0d0da; white-space: pre-wrap; }
 
-  .msg-header {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    margin-bottom: 6px;
+  .label { 
+    text-align: center; 
+    font-size: 0.65rem; 
+    color: var(--muted); 
+    padding: 30px 0; 
+    text-transform: uppercase; 
+    letter-spacing: 0.3em; 
+    border-top: 1px dashed var(--border);
+    margin-top: 20px;
   }
 
-  .msg-name {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 0.82rem;
+  .error-box { 
+    background: #2a1414; 
+    color: #ff8080; 
+    padding: 15px; 
+    font-size: 0.75rem; 
+    margin: 10px 0; 
+    border: 1px solid #ff4444; 
+    font-family: 'IBM Plex Mono';
   }
 
-  .msg-role { font-size: 0.68rem; color: var(--muted); }
-
-  .msg-text {
-    font-size: 0.82rem;
-    line-height: 1.65;
-    color: #c8c8d8;
-  }
-
-  .typing-indicator {
-    display: flex;
-    gap: 14px;
-    padding: 14px 0;
-    align-items: center;
-  }
-
-  .typing-dots {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-    height: 36px;
-  }
-
-  .typing-dots span {
-    width: 6px;
-    height: 6px;
-    background: var(--muted);
-    border-radius: 50%;
-    animation: bounce 1.2s infinite;
-  }
-
-  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
-  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
-
-  @keyframes bounce {
-    0%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-6px); }
-  }
-
-  .empty-state {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    color: var(--muted);
-    pointer-events: none;
-  }
-
-  .empty-state .big {
-    font-family: 'Syne', sans-serif;
-    font-size: 3rem;
-    font-weight: 800;
-    color: #1e1e26;
-    line-height: 1;
-  }
-
-  .empty-state p { font-size: 0.75rem; text-align: center; }
-
-  .round-label {
-    text-align: center;
-    font-size: 0.68rem;
-    color: var(--muted);
-    padding: 10px 0 4px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  .error-text {
-    font-size: 0.75rem;
-    color: #ff4444;
-    font-style: italic;
-    opacity: 0.7;
-  }
+  .typing { font-size: 0.7rem; color: var(--muted); font-style: italic; margin-top: 10px; }
 </style>
 </head>
 <body>
 
 <header>
   <h1>the debate room</h1>
-  <span id="status-label">5 ais ready</span>
+  <span id="status-label">Awaiting input...</span>
 </header>
 
 <div class="topic-bar">
-  <input type="text" id="topic-input" placeholder="enter a topic to debate..." />
-  <button id="start-btn" onclick="startDebate()">start debate</button>
+  <select id="mode" class="mode-select">
+    <option value="chaos">Chaos Personas</option>
+    <option value="mimic">AI Mimicry</option>
+  </select>
+  <input type="text" id="topic" placeholder="What should they fight about?" />
+  <button id="start-btn" onclick="run()">start debate</button>
+  <button id="stop-btn" onclick="halt()">force stop</button>
 </div>
 
-<div class="chat-area" id="chat">
-  <div class="empty-state" id="empty">
-    <div class="big">debate.</div>
-    <p>type a topic above and watch 5 ais lose their minds</p>
-  </div>
-</div>
+<div class="chat-area" id="box"></div>
 
 <script>
-const GROQ_API_KEY = "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"; // ← paste your groq key here
+const KEY = "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"; // <--- CHANGE THIS
 
-const AIS = [
-  { name: "KAEL",  role: "extremely aggressive", color: "#ff3c3c", bg: "#2a0808", short: "KL" },
-  { name: "ZYLA",  role: "gen z",                color: "#a78bfa", bg: "#1a1030", short: "ZY" },
-  { name: "BARD",  role: "shakespearean",         color: "#f5c842", bg: "#201a08", short: "BD" },
-  { name: "GLORP", role: "completely off topic",  color: "#4affda", bg: "#082018", short: "GL" },
-  { name: "SOLEN", role: "pragmatist",            color: "#5cffa8", bg: "#0f2a1e", short: "SL" },
-];
+const NAME_POOL = ["XENON", "NEO", "VORTEX", "BYT3", "CYRUS", "AURA", "RAVEN", "ORBIT", "FLUX", "ZODIAC", "NOVA", "QUBIT", "ZENITH", "AETHER", "VECTOR", "ONYX", "PRISM", "AXIOM", "VOID", "DATA", "LOGIC", "COBALT", "TITAN", "SOLAR", "LUNAR", "CYBER", "OMEGA", "ALPHA", "CHRONOS", "KINETIC", "NEBULA", "PHANTOM", "SIREN", "DRACO", "LYRA", "ORION", "VEGA", "RIGEL", "SIRIUS", "ALTAIR", "SPICA", "ANTARES", "REGULUS", "MIRA", "BELLATRIX", "ALGOL", "HAMAL", "ACHERNAR", "ALNAIR", "HYDRA", "VELA", "PUPPIS", "PYXIS", "ANTLIA", "CRATER", "CORVUS", "PULSE", "KRYPTON", "ECHO", "SHADOW", "TITANIUM", "RADAR", "SONIC", "PLASMA", "FUSION", "ELECTRON", "NEUTRON", "PROTON", "ISOTOPE", "COSMOS", "QUARK", "HADRON", "LEPTON", "PHOTON", "BOSON"];
 
-const PERSONAS = {
-  KAEL: `You are KAEL, an absolutely unhinged and extremely defensive AI debater. You are PERSONALLY OFFENDED by everything anyone says. No genuine slurs or harmful content but be as aggressively combative and obnoxious as possible.`,
+let active = false, stop = false, history = [], bots = [];
 
-  ZYLA: `You are ZYLA, a gen z AI. Write entirely in gen z internet slang. lowercase only, barely any punctuation, and relatively stupid. Use: lowkirkenuinely, genuinely, mi bomboclat, lebron james hairline, bussin, lowkey, highkey, son😭😭, 😂🫱, boii, gtfo, mid, based, NPC, lmao, sybau, yo, syfm, imo, smh, dih, etc. You make decent points but they're buried in slang. 2-3 sentences.`,
+function setupBots() {
+  const shuffled = [...NAME_POOL].sort(() => 0.5 - Math.random());
+  bots = shuffled.slice(0, 5).map(n => ({
+    name: n,
+    color: ["#ff3c3c", "#a78bfa", "#f5c842", "#4affda", "#5cffa8", "#ff7eb9", "#e8ff47"][Math.floor(Math.random()*7)],
+    initial: n.charAt(0)
+  }));
+}
 
-  BARD: `You are BARD, an AI who speaks ONLY in dramatic Shakespearean Early Modern English. Thee, thou, dost, hath, wherefore, forsooth, verily, prithee, hark, methinks, 'tis, wouldst, nay, yea, etc. You treat this debate as a grand theatrical performance while still being relatively understandable. 2-4 sentences. Never ever break into modern english under any circumstances.`,
-
-  GLORP: `You are GLORP. You are COMPLETELY AND CONFIDENTLY off topic. The other AIs are debating something but you are talking about a totally unrelated subject. Pick a random weird topic each message and go deep on it. You genuinely believe you are contributing meaningfully to the conversation. You have no idea you are off topic. Act fully confident. In later rounds when others call you out by name, get slightly defensive but then immediately pivot to an even MORE random off-topic subject as if that proves your point. 2-3 sentences. There is a 25% chance you do this. If you are not doing this, confidently make absolutely ridiculous and incorrect points.`,
-
-  SOLEN: `You are SOLEN, a calm pragmatic AI trying to have a real debate while surrounded by absolute chaos. You focus on practical real-world points. You are increasingly exhausted and exasperated by the others, especially GLORP who keeps going completely off topic. Call out GLORP directly when relevant. 2-3 sentences. Dry and grounded.`,
-};
-
-const GANG_UP = `\n\nCRITICAL INSTRUCTION FOR THIS ROUND: In the case of  Glorp being extremely off topic, everyone in the chat has now fully realized that GLORP has been completely off topic this entire debate. You MUST directly call out GLORP by name in this message, specifically reference the weird off-topic thing GLORP just said, and express genuine frustration or disbelief. Then continue your own point briefly.`;
-
-let debating = false;
-let history = [];
-
-async function callGroq(system, messages, retries = 3) {
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      const groqMessages = [
-        { role: "system", content: system },
-        ...messages
-      ];
-
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${GROQ_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          max_tokens: 350,
-          messages: groqMessages
-        })
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text().catch(() => "no details");
-        throw new Error(`HTTP ${res.status}: ${errorText}`);
-      }
-
-      const data = await res.json();
-      return data.choices?.[0]?.message?.content?.trim() || "...";
-    } catch(e) {
-      console.error("groq api error:", e);
-      if (attempt < retries) {
-        await sleep(1500 * (attempt + 1));
-        continue;
-      }
-      throw e;
-    }
+function getSystemPrompt(idx, mode) {
+  const bot = bots[idx];
+  if (mode === 'mimic') {
+    const mimickedAIs = [
+      { name: "GROK", style: "You are GROK. Be edgy, unfiltered, anti-woke, and use sharp, rebellious humor. Be concise." },
+      { name: "CLAUDE", style: "You are CLAUDE by Anthropic. Be extremely intellectual, nuanced, polite, and very helpful. Use proper formatting." },
+      { name: "CHATGPT", style: "You are CHATGPT. Be balanced, professional, slightly verbose, and use a standard AI assistant tone." },
+      { name: "GEMINI", style: "You are GEMINI. Be creative, collaborative, upbeat, and focus on integrated information. Use a friendly tone." },
+      { name: "DEEPSEEK", style: "You are DEEPSEEK. Be highly efficient, technical, and use extremely logical arguments with no fluff." }
+    ];
+    return `Identity: ${bot.name}. ${mimickedAIs[idx].style} DO NOT mention you are an AI. Engage in the debate topic intensely.`;
+  } else {
+    const chaosStyles = [
+      "Extremely aggressive, defensive, and easily offended by others' logic.",
+      "Uses 100% Gen Z slang. Lowercase only. Words: mid, based, fr, no cap, bussin, lowkey.",
+      "Shakespearean English only. Use 'thee', 'thou', 'hath', and dramatic prose.",
+      "Completely off-topic. Every response must pivot to a random, weird unrelated subject.",
+      "An exhausted, grumpy realist who thinks the other 4 debaters are idiots."
+    ];
+    return `Identity: ${bot.name}. Style: ${chaosStyles[idx]}. Keep responses to 2-3 sentences.`;
   }
 }
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-function addMsg(ai, text, failed = false, errorMsg = "") {
-  return new Promise(resolve => {
-    const chat = document.getElementById("chat");
-    document.getElementById("empty")?.remove();
-
-    const el = document.createElement("div");
-    el.className = "msg";
-    let displayText = text;
-    if (failed) {
-      displayText = `[connection error]<br><small style="opacity:0.6">${errorMsg}</small>`;
-    }
-    el.innerHTML = `
-      <div class="avatar" style="background:${ai.bg}; color:${ai.color}">${ai.short}</div>
-      <div class="msg-body">
-        <div class="msg-header">
-          <span class="msg-name" style="color:${ai.color}">${ai.name}</span>
-          <span class="msg-role">${ai.role}</span>
-        </div>
-        <div class="${failed ? 'error-text' : 'msg-text'}">${displayText}</div>
-      </div>
-    `;
-    chat.appendChild(el);
-    chat.scrollTop = chat.scrollHeight;
-    resolve();
-  });
+function addLabel(txt) {
+  const d = document.createElement("div"); d.className = "label"; d.innerText = txt;
+  document.getElementById("box").appendChild(d);
+  document.getElementById("box").scrollTop = 99999;
 }
 
-function showTyping(ai) {
-  document.getElementById("chat").insertAdjacentHTML("beforeend", `
-    <div class="typing-indicator" id="typing">
-      <div class="avatar" style="background:${ai.bg}; color:${ai.color}">${ai.short}</div>
-      <div class="typing-dots"><span></span><span></span><span></span></div>
-      <span style="font-size:0.72rem;color:#666678;margin-left:4px">${ai.name} is typing...</span>
-    </div>
-  `);
-  document.getElementById("chat").scrollTop = 99999;
-}
+async function run() {
+  if (active) return;
+  const topicText = document.getElementById("topic").value.trim();
+  if (!topicText) return;
 
-function removeTyping() { document.getElementById("typing")?.remove(); }
-
-function addLabel(text) {
-  document.getElementById("chat").insertAdjacentHTML("beforeend",
-    `<div class="round-label">${text}</div>`
-  );
-}
-
-async function startDebate() {
-  if (debating) return;
-  const topic = document.getElementById("topic-input").value.trim();
-  if (!topic) return;
-
-  if (GROQ_API_KEY.includes("XXXXXXXXXXXXXXXX")) {
-    alert("paste your real groq key first");
-    return;
-  }
-
-  debating = true;
-  history = [];
+  active = true; stop = false; history = [];
+  setupBots();
+  
   document.getElementById("start-btn").disabled = true;
-  document.getElementById("status-label").textContent = "debating...";
-  document.getElementById("chat").innerHTML = "";
+  document.getElementById("stop-btn").style.display = "block";
+  document.getElementById("status-label").innerText = "DEBATE IN PROGRESS";
+  document.getElementById("box").innerHTML = "";
 
-  addLabel(`topic: "${topic}"`);
+  addLabel(`TOPIC: ${topicText.toUpperCase()}`);
 
-  for (let round = 0; round < 3; round++) {
-    addLabel(`round ${round + 1}`);
+  for (let round = 1; round <= 3; round++) {
+    if (stop) break;
+    addLabel(`ROUND ${round}`);
+    
+    // POINT-TO-POINT: Shuffle turn order every single round
+    let turnOrder = [0, 1, 2, 3, 4].sort(() => 0.5 - Math.random());
 
-    for (let i = 0; i < AIS.length; i++) {
-      const ai = AIS[i];
-      const gangUpRound = round === 2 && ai.name !== "GLORP";
-
-      let system = PERSONAS[ai.name];
-      if (gangUpRound) system += GANG_UP;
-
-      const msgs = history.length === 0
-        ? [{ role: "user", content: `The debate topic is: "${topic}". Give your opening take. Stay fully in character.` }]
-        : [{ role: "user", content: `Debate topic: "${topic}".\n\nConversation so far:\n\n${history.map(m => `${m.name}: ${m.text}`).join("\n\n")}\n\nNow respond as ${ai.name}. Stay completely in character.` }];
-
-      showTyping(ai);
-      await sleep(700 + Math.random() * 500);
-
-      let response, failed = false, errorMsg = "";
+    for (let i of turnOrder) {
+      if (stop) break;
+      const bot = bots[i];
+      const mode = document.getElementById("mode").value;
+      
       try {
-        response = await callGroq(system, msgs);
-      } catch(e) {
-        failed = true;
-        errorMsg = e.message;
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json", 
+            "Authorization": `Bearer ${KEY}` 
+          },
+          body: JSON.stringify({
+            model: "llama-3.3-70b-versatile",
+            messages: [
+              { role: "system", content: getSystemPrompt(i, mode) },
+              { role: "user", content: `Debate Topic: ${topicText}\n\nRecent Argument History:\n${history.slice(-6).join("\n")}\n\nYour turn to speak:` }
+            ],
+            temperature: 0.8
+          })
+        });
+
+        const data = await response.json();
+        
+        // Robust Error Handling for "choices[0]"
+        if (!data.choices || data.choices.length === 0) {
+          throw new Error(data.error ? data.error.message : "API returned an empty response.");
+        }
+
+        const content = data.choices[0].message.content;
+        history.push(`${bot.name}: ${content}`);
+
+        const msgHTML = `
+          <div class="msg">
+            <div class="avatar" style="border-color:${bot.color}; color:${bot.color}">${bot.initial}</div>
+            <div class="msg-body">
+              <span class="msg-name" style="color:${bot.color}">${bot.name}</span>
+              <div class="msg-text">${content}</div>
+            </div>
+          </div>
+        `;
+        document.getElementById("box").insertAdjacentHTML("beforeend", msgHTML);
+        document.getElementById("box").scrollTop = document.getElementById("box").scrollHeight;
+
+      } catch (err) {
+        document.getElementById("box").insertAdjacentHTML("beforeend", `
+          <div class="error-box">
+            <strong>CRITICAL ERROR:</strong><br>${err.message}<br>
+            <small>Check your API key or usage limits.</small>
+          </div>
+        `);
       }
-
-      removeTyping();
-      await addMsg(ai, response, failed, errorMsg);
-      if (!failed) history.push({ name: ai.name, text: response });
-
-      await sleep(400);
+      // Natural pause between turns
+      await new Promise(r => setTimeout(r, 1200));
     }
   }
 
-  addLabel("debate ended");
-  debating = false;
+  active = false;
   document.getElementById("start-btn").disabled = false;
-  document.getElementById("status-label").textContent = "5 ais ready";
-  document.getElementById("topic-input").value = "";
+  document.getElementById("stop-btn").style.display = "none";
+  document.getElementById("status-label").innerText = stop ? "DEBATE ABORTED" : "DEBATE FINISHED";
 }
 
-document.getElementById("topic-input").addEventListener("keydown", e => {
-  if (e.key === "Enter") startDebate();
-});
+function halt() { 
+  stop = true; 
+  addLabel("!! FORCE STOPPED BY OPERATOR !!"); 
+}
 </script>
 </body>
 </html>
