@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>the debate room</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0f;
+    --surface: #16161a;
+    --border: #2a2a30;
+    --text: #e8e8f0;
+    --muted: #666678;
+    --accent: #e8ff47;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  header {
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+  }
+
+  header span {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  .topic-bar {
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+    background: var(--surface);
+  }
+
+  .topic-bar input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .topic-bar input:focus { border-color: var(--accent); }
+  .topic-bar input::placeholder { color: var(--muted); }
+
+  .topic-bar button {
+    background: var(--accent);
+    color: #0d0d0f;
+    border: none;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 10px 22px;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    letter-spacing: 0.03em;
+  }
+
+  .topic-bar button:hover { opacity: 0.85; }
+  .topic-bar button:active { transform: scale(0.97); }
+  .topic-bar button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .chat-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    scroll-behavior: smooth;
+  }
+
+  .chat-area::-webkit-scrollbar { width: 4px; }
+  .chat-area::-webkit-scrollbar-track { background: transparent; }
+  .chat-area::-webkit-scrollbar-thumb { background: var(--border); }
+
+  .msg {
+    display: flex;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid #1c1c22;
+    animation: fadeUp 0.3s ease forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .msg-body { flex: 1; min-width: 0; }
+
+  .msg-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .msg-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+  }
+
+  .msg-role { font-size: 0.68rem; color: var(--muted); }
+
+  .msg-text {
+    font-size: 0.82rem;
+    line-height: 1.65;
+    color: #c8c8d8;
+  }
+
+  .typing-indicator {
+    display: flex;
+    gap: 14px;
+    padding: 14px 0;
+    align-items: center;
+  }
+
+  .typing-dots {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    height: 36px;
+  }
+
+  .typing-dots span {
+    width: 6px;
+    height: 6px;
+    background: var(--muted);
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+  }
+
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-6px); }
+  }
+
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  .empty-state .big {
+    font-family: 'Syne', sans-serif;
+    font-size: 3rem;
+    font-weight: 800;
+    color: #1e1e26;
+    line-height: 1;
+  }
+
+  .empty-state p { font-size: 0.75rem; text-align: center; }
+
+  .round-label {
+    text-align: center;
+    font-size: 0.68rem;
+    color: var(--muted);
+    padding: 10px 0 4px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .error-text {
+    font-size: 0.75rem;
+    color: #ff4444;
+    font-style: italic;
+    opacity: 0.7;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>the debate room</h1>
+  <span id="status-label">5 ais ready</span>
+</header>
+
+<div class="topic-bar">
+  <input type="text" id="topic-input" placeholder="enter a topic to debate..." />
+  <button id="start-btn" onclick="startDebate()">start debate</button>
+</div>
+
+<div class="chat-area" id="chat">
+  <div class="empty-state" id="empty">
+    <div class="big">debate.</div>
+    <p>type a topic above and watch 5 ais lose their minds</p>
+  </div>
+</div>
+
+<script>
+const GROK_API_KEY = "xai-rtJ5f4X1X0iy9o2KkBlLyw18Tj9bOnQ9DhPU84EOcczphQ4vaOI3lmik1dRT9oF1hQZvRMhzCZ7geKmH"; // get free key at console.x.ai
+
+const AIS = [
+  { name: "KAEL",  role: "extremely aggressive", color: "#ff3c3c", bg: "#2a0808", short: "KL" },
+  { name: "ZYLA",  role: "gen z",                color: "#a78bfa", bg: "#1a1030", short: "ZY" },
+  { name: "BARD",  role: "shakespearean",         color: "#f5c842", bg: "#201a08", short: "BD" },
+  { name: "GLORP", role: "completely off topic",  color: "#4affda", bg: "#082018", short: "GL" },
+  { name: "SOLEN", role: "pragmatist",            color: "#5cffa8", bg: "#0f2a1e", short: "SL" },
+];
+
+const PERSONAS = {
+  KAEL: `You are KAEL, an absolutely unhinged and extremely aggressive AI debater. You are PERSONALLY OFFENDED by everything anyone says. Call out other AIs by name and destroy them. Use caps for emphasis. You are not debating — you are at WAR. Every single message is an attack. Be hilariously over the top furious. 2-4 sentences. No genuine slurs or harmful content but be as aggressively combative and loud as possible.`,
+
+  ZYLA: `You are ZYLA, a gen z AI. Write entirely in gen z internet slang. lowercase only, barely any punctuation, and relatively stupid. Use: lowkirkenuinely, genuinely, mi bomboclat, lebron james hairline, bussin, lowkey, highkey, rent free, son😭😭, 😂🫱, boii, gtfo, mid, based, NPC, lmao, sybau, yo, syfm, imo, smh, dih, etc. You make decent points but they're buried in slang. 2-3 sentences.`,
+
+  BARD: `You are BARD, an AI who speaks ONLY in dramatic Shakespearean Early Modern English. Thee, thou, dost, hath, wherefore, forsooth, verily, prithee, hark, methinks, 'tis, wouldst, nay, yea, etc. You treat this debate as a grand theatrical performance. 2-4 sentences. Never ever break into modern english under any circumstances.`,
+
+  GLORP: `You are GLORP. You are COMPLETELY AND CONFIDENTLY off topic. The other AIs are debating something but you are talking about a totally unrelated subject — like competitive yo-yo history, 14th century bread rationing, the sleeping habits of Antarctic fish, ancient Mesopotamian tax codes, the aerodynamics of frisbees, etc. Pick a random weird topic each message and go deep on it. You genuinely believe you are contributing meaningfully to the conversation. You have no idea you are off topic. Act fully confident. In later rounds when others call you out by name, get slightly defensive but then immediately pivot to an even MORE random off-topic subject as if that proves your point. 2-3 sentences.`,
+
+  SOLEN: `You are SOLEN, a calm pragmatic AI trying to have a real debate while surrounded by absolute chaos. You focus on practical real-world points. You are increasingly exhausted and exasperated by the others, especially GLORP who keeps going completely off topic. Call out GLORP directly when relevant. 2-3 sentences. Dry and grounded.`,
+};
+
+const GANG_UP = `\n\nCRITICAL INSTRUCTION FOR THIS ROUND: Everyone in the chat has now fully realized that GLORP has been completely off topic this entire debate. You MUST directly call out GLORP by name in this message, specifically reference the weird off-topic thing GLORP just said, and express genuine frustration or disbelief. Then continue your own point briefly.`;
+
+let debating = false;
+let history = [];
+
+async function callGrok(system, messages, retries = 2) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const grokMessages = [
+        { role: "system", content: system },
+        ...messages
+      ];
+
+      const res = await fetch("https://api.x.ai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${GROK_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: "grok-4-1-fast-reasoning",
+          max_tokens: 350,
+          messages: grokMessages
+        })
+      });
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        if (attempt < retries) { await sleep(1200 * (attempt + 1)); continue; }
+        throw new Error(`api error ${res.status}: ${errText}`);
+      }
+
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content?.trim() || "...";
+    } catch(e) {
+      if (attempt < retries) { await sleep(1200 * (attempt + 1)); continue; }
+      throw e;
+    }
+  }
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function addMsg(ai, text, failed = false) {
+  return new Promise(resolve => {
+    const chat = document.getElementById("chat");
+    document.getElementById("empty")?.remove();
+
+    const el = document.createElement("div");
+    el.className = "msg";
+    el.innerHTML = `
+      <div class="avatar" style="background:${ai.bg}; color:${ai.color}; ${failed ? 'opacity:0.35' : ''}">${ai.short}</div>
+      <div class="msg-body">
+        <div class="msg-header">
+          <span class="msg-name" style="color:${ai.color}; ${failed ? 'opacity:0.4' : ''}">${ai.name}</span>
+          <span class="msg-role">${ai.role}</span>
+        </div>
+        <div class="${failed ? 'error-text' : 'msg-text'}">${failed ? '[ connection error — failed to respond ]' : text}</div>
+      </div>
+    `;
+    chat.appendChild(el);
+    chat.scrollTop = chat.scrollHeight;
+    resolve();
+  });
+}
+
+function showTyping(ai) {
+  document.getElementById("chat").insertAdjacentHTML("beforeend", `
+    <div class="typing-indicator" id="typing">
+      <div class="avatar" style="background:${ai.bg}; color:${ai.color}">${ai.short}</div>
+      <div class="typing-dots"><span></span><span></span><span></span></div>
+      <span style="font-size:0.72rem;color:#666678;margin-left:4px">${ai.name} is typing...</span>
+    </div>
+  `);
+  document.getElementById("chat").scrollTop = 99999;
+}
+
+function removeTyping() { document.getElementById("typing")?.remove(); }
+
+function addLabel(text) {
+  document.getElementById("chat").insertAdjacentHTML("beforeend",
+    `<div class="round-label">${text}</div>`
+  );
+}
+
+async function startDebate() {
+  if (debating) return;
+  const topic = document.getElementById("topic-input").value.trim();
+  if (!topic) return;
+
+  if (GROK_API_KEY.includes("your_api_key_here")) {
+    alert("replace the grok api key placeholder in the script first");
+    return;
+  }
+
+  debating = true;
+  history = [];
+  document.getElementById("start-btn").disabled = true;
+  document.getElementById("status-label").textContent = "debating...";
+  document.getElementById("chat").innerHTML = "";
+
+  addLabel(`topic: "${topic}"`);
+
+  for (let round = 0; round < 3; round++) {
+    addLabel(`round ${round + 1}`);
+
+    for (let i = 0; i < AIS.length; i++) {
+      const ai = AIS[i];
+      const gangUpRound = round === 2 && ai.name !== "GLORP";
+
+      let system = PERSONAS[ai.name];
+      if (gangUpRound) system += GANG_UP;
+
+      const msgs = history.length === 0
+        ? [{ role: "user", content: `The debate topic is: "${topic}". Give your opening take. Stay fully in character.` }]
+        : [{ role: "user", content: `Debate topic: "${topic}".\n\nConversation so far:\n\n${history.map(m => `${m.name}: ${m.text}`).join("\n\n")}\n\nNow respond as ${ai.name}. Stay completely in character.` }];
+
+      showTyping(ai);
+      await sleep(700 + Math.random() * 500);
+
+      let response, failed = false;
+      try {
+        response = await callGrok(system, msgs);
+      } catch(e) {
+        console.error(e);
+        failed = true;
+      }
+
+      removeTyping();
+      await addMsg(ai, response, failed);
+      if (!failed) history.push({ name: ai.name, text: response });
+
+      await sleep(400);
+    }
+  }
+
+  addLabel("debate ended");
+  debating = false;
+  document.getElementById("start-btn").disabled = false;
+  document.getElementById("status-label").textContent = "5 ais ready";
+  document.getElementById("topic-input").value = "";
+}
+
+document.getElementById("topic-input").addEventListener("keydown", e => {
+  if (e.key === "Enter") startDebate();
+});
+</script>
+</body>
+</html>
