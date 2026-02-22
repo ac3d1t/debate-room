@@ -244,7 +244,7 @@
 </div>
 
 <script>
-const GROK_API_KEY = "xai-rtJ5f4X1X0iy9o2KkBlLyw18Tj9bOnQ9DhPU84EOcczphQ4vaOI3lmik1dRT9oF1hQZvRMhzCZ7geKmH"; // ← paste your full key here (starts with xai-)
+const GROQ_API_KEY = "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"; // ← paste your groq key here
 
 const AIS = [
   { name: "KAEL",  role: "extremely aggressive", color: "#ff3c3c", bg: "#2a0808", short: "KL" },
@@ -271,24 +271,24 @@ const GANG_UP = `\n\nCRITICAL INSTRUCTION FOR THIS ROUND: Everyone in the chat h
 let debating = false;
 let history = [];
 
-async function callGrok(system, messages, retries = 3) {
+async function callGroq(system, messages, retries = 3) {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const grokMessages = [
+      const groqMessages = [
         { role: "system", content: system },
         ...messages
       ];
 
-      const res = await fetch("https://api.x.ai/v1/chat/completions", {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${GROK_API_KEY}`
+          "Authorization": `Bearer ${GROQ_API_KEY}`
         },
         body: JSON.stringify({
-          model: "grok-4",
+          model: "llama-3.3-70b-versatile",
           max_tokens: 350,
-          messages: grokMessages
+          messages: groqMessages
         })
       });
 
@@ -300,7 +300,7 @@ async function callGrok(system, messages, retries = 3) {
       const data = await res.json();
       return data.choices?.[0]?.message?.content?.trim() || "...";
     } catch(e) {
-      console.error("grok api error:", e);
+      console.error("groq api error:", e);
       if (attempt < retries) {
         await sleep(1500 * (attempt + 1));
         continue;
@@ -363,8 +363,8 @@ async function startDebate() {
   const topic = document.getElementById("topic-input").value.trim();
   if (!topic) return;
 
-  if (GROK_API_KEY.includes("XXXXXXXXXXXXXXXX")) {
-    alert("paste your real xai- key first");
+  if (GROQ_API_KEY.includes("XXXXXXXXXXXXXXXX")) {
+    alert("paste your real groq key first");
     return;
   }
 
@@ -395,7 +395,7 @@ async function startDebate() {
 
       let response, failed = false, errorMsg = "";
       try {
-        response = await callGrok(system, msgs);
+        response = await callGroq(system, msgs);
       } catch(e) {
         failed = true;
         errorMsg = e.message;
