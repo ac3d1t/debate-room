@@ -244,7 +244,7 @@
 </div>
 
 <script>
-const GROK_API_KEY = "xai-rtJ5f4X1X0iy9o2KkBlLyw18Tj9bOnQ9DhPU84EOcczphQ4vaOI3lmik1dRT9oF1hQZvRMhzCZ7geKmH"; // get free key at console.x.ai
+const GROK_API_KEY = "xai-rtJ5f4X1X0iy9o2KkBlLyw18Tj9bOnQ9DhPU84EOcczphQ4vaOI3lmik1dRT9oF1hQZvRMhzCZ7geKmH"; // ← paste your full key here (starts with xai-)
 
 const AIS = [
   { name: "KAEL",  role: "extremely aggressive", color: "#ff3c3c", bg: "#2a0808", short: "KL" },
@@ -271,7 +271,7 @@ const GANG_UP = `\n\nCRITICAL INSTRUCTION FOR THIS ROUND: Everyone in the chat h
 let debating = false;
 let history = [];
 
-async function callGrok(system, messages, retries = 2) {
+async function callGrok(system, messages, retries = 3) {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const grokMessages = [
@@ -286,22 +286,25 @@ async function callGrok(system, messages, retries = 2) {
           "Authorization": `Bearer ${GROK_API_KEY}`
         },
         body: JSON.stringify({
-          model: "grok-4-1-fast-reasoning",
+          model: "grok-4",
           max_tokens: 350,
           messages: grokMessages
         })
       });
 
       if (!res.ok) {
-        const errText = await res.text().catch(() => "");
-        if (attempt < retries) { await sleep(1200 * (attempt + 1)); continue; }
-        throw new Error(`api error ${res.status}: ${errText}`);
+        const errorText = await res.text().catch(() => "no details");
+        throw new Error(`HTTP ${res.status}: ${errorText}`);
       }
 
       const data = await res.json();
       return data.choices?.[0]?.message?.content?.trim() || "...";
     } catch(e) {
-      if (attempt < retries) { await sleep(1200 * (attempt + 1)); continue; }
+      console.error("grok api error:", e);
+      if (attempt < retries) {
+        await sleep(1500 * (attempt + 1));
+        continue;
+      }
       throw e;
     }
   }
@@ -309,21 +312,25 @@ async function callGrok(system, messages, retries = 2) {
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-function addMsg(ai, text, failed = false) {
+function addMsg(ai, text, failed = false, errorMsg = "") {
   return new Promise(resolve => {
     const chat = document.getElementById("chat");
     document.getElementById("empty")?.remove();
 
     const el = document.createElement("div");
     el.className = "msg";
+    let displayText = text;
+    if (failed) {
+      displayText = `[connection error]<br><small style="opacity:0.6">${errorMsg}</small>`;
+    }
     el.innerHTML = `
-      <div class="avatar" style="background:${ai.bg}; color:${ai.color}; ${failed ? 'opacity:0.35' : ''}">${ai.short}</div>
+      <div class="avatar" style="background:${ai.bg}; color:${ai.color}">${ai.short}</div>
       <div class="msg-body">
         <div class="msg-header">
-          <span class="msg-name" style="color:${ai.color}; ${failed ? 'opacity:0.4' : ''}">${ai.name}</span>
+          <span class="msg-name" style="color:${ai.color}">${ai.name}</span>
           <span class="msg-role">${ai.role}</span>
         </div>
-        <div class="${failed ? 'error-text' : 'msg-text'}">${failed ? '[ connection error — failed to respond ]' : text}</div>
+        <div class="${failed ? 'error-text' : 'msg-text'}">${displayText}</div>
       </div>
     `;
     chat.appendChild(el);
@@ -356,8 +363,8 @@ async function startDebate() {
   const topic = document.getElementById("topic-input").value.trim();
   if (!topic) return;
 
-  if (GROK_API_KEY.includes("your_api_key_here")) {
-    alert("replace the grok api key placeholder in the script first");
+  if (GROK_API_KEY.includes("XXXXXXXXXXXXXXXX")) {
+    alert("paste your real xai- key first");
     return;
   }
 
@@ -386,16 +393,16 @@ async function startDebate() {
       showTyping(ai);
       await sleep(700 + Math.random() * 500);
 
-      let response, failed = false;
+      let response, failed = false, errorMsg = "";
       try {
         response = await callGrok(system, msgs);
       } catch(e) {
-        console.error(e);
         failed = true;
+        errorMsg = e.message;
       }
 
       removeTyping();
-      await addMsg(ai, response, failed);
+      await addMsg(ai, response, failed, errorMsg);
       if (!failed) history.push({ name: ai.name, text: response });
 
       await sleep(400);
