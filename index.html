@@ -24,21 +24,20 @@
   #gen-topic-btn { background: var(--border); color: var(--text); font-size: 0.7rem; }
   #stop-btn { background: var(--stop); color: #fff; display: none; }
 
-  /* Persona Editor Sidebar */
   .main-container { display: flex; flex: 1; overflow: hidden; }
-  .editor-sidebar { width: 280px; border-right: 1px solid var(--border); padding: 20px; overflow-y: auto; background: #0a0a0c; }
+  .editor-sidebar { width: 300px; border-right: 1px solid var(--border); padding: 20px; overflow-y: auto; background: #0a0a0c; transition: 0.3s; }
   .editor-sidebar h3 { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; margin-bottom: 15px; letter-spacing: 0.1em; }
   .persona-card { background: var(--surface); border: 1px solid var(--border); padding: 12px; margin-bottom: 12px; }
   .persona-card label { font-size: 0.65rem; color: var(--accent); display: block; margin-bottom: 5px; font-weight: 700; }
-  .persona-card textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: #ccc; font-size: 0.7rem; padding: 5px; resize: none; font-family: inherit; height: 50px; outline: none; }
+  .persona-card textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: #ccc; font-size: 0.7rem; padding: 5px; resize: none; font-family: inherit; height: 65px; outline: none; }
 
   .chat-area { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; }
   .msg { display: flex; gap: 15px; padding: 20px 0; border-bottom: 1px solid #1c1c22; animation: fade 0.3s ease; }
-  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
   .avatar { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-weight: 800; border: 1px solid; flex-shrink: 0; font-size: 0.75rem; }
   .msg-name { font-family: 'Syne'; font-weight: 700; font-size: 0.8rem; margin-bottom: 4px; display: block; }
-  .msg-text { font-size: 0.82rem; line-height: 1.6; color: #ccc; }
-  .label { text-align: center; font-size: 0.6rem; color: var(--muted); padding: 20px 0; text-transform: uppercase; letter-spacing: 0.2em; }
+  .msg-text { font-size: 0.85rem; line-height: 1.6; color: #ccc; }
+  .label { text-align: center; font-size: 0.6rem; color: var(--muted); padding: 20px 0; text-transform: uppercase; letter-spacing: 0.2em; border-top: 1px solid #1c1c22; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -54,41 +53,37 @@
     <option value="mimic">AI Mimicry</option>
   </select>
   <button id="gen-topic-btn" onclick="generateTopic()">Generate Topic</button>
-  <input type="text" id="topic" placeholder="What's the beef?" />
+  <input type="text" id="topic" placeholder="Enter topic..." />
   <button id="start-btn" onclick="run()">Start</button>
   <button id="stop-btn" onclick="halt()">Stop</button>
 </div>
 
 <div class="main-container">
   <div class="editor-sidebar" id="sidebar">
-    <h3>Persona Editor (Chaos)</h3>
+    <h3>Persona Editor</h3>
     <div id="persona-fields"></div>
   </div>
   <div class="chat-area" id="box"></div>
 </div>
 
 <script>
-const KEY = "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";
+const KEY = "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"; // USE YOUR KEY
 
 const OLD_NAMES = ["KAEL", "ZYLA", "BARD", "GLORP", "SOLEN"];
-const NAME_POOL = ["XENON", "NEO", "VORTEX", "BYT3", "CYRUS", "AURA", "RAVEN", "ORBIT", "FLUX", "ZODIAC", "NOVA", "QUBIT", "GHOST", "PULSE", "ZENITH", "AETHER", "VECTOR", "ONYX", "AXIOM", "VOID", "DATA", "COBALT", "TITAN", "SOLAR", "CYBER", "OMEGA", "ALPHA", "CHRONOS", "KINETIC", "NEBULA"];
-const TOPICS = ["Is water wet?", "Cereal is soup: Yes or No?", "Pineapple on pizza is a crime.", "AI will replace all artists by 2030.", "Hot dogs are sandwiches.", "The moon landing was a movie set.", "Cats are better than dogs.", "Should we ban TikTok?", "Is cereal a soup?", "Batman could beat Superman with no prep time.", "Are these topics AI generated?"];
+const TOPICS = ["Is water wet?", "Cereal is soup: Yes or No?", "Hot dogs are sandwiches.", "Batman could beat Superman with no prep time.", "Pineapple on pizza is a crime.", "Is the moon a hologram?", "Should we tax oxygen?", "Is cereal breakfast salad?"];
 
 let active = false, stop = false, history = [], bots = [];
 
-// Default Chaos behaviors
 let behaviors = [
-  "Extremely aggressive, defensive, and hates everyone's opinion.",
-  "Write entirely in gen z internet slang. lowercase only, barely any punctuation, and relatively stupid. Use: lowkirkenuinely, genuinely, mi bomboclat, lebron james hairline, bussin, lowkey, highkey, rent free, son😭😭, 😂🫱, boii, gtfo, mid, based, NPC, lmao, sybau, yo, syfm, imo, smh, dih, etc. You make decent points but they're buried in slang. 1-2 short sentences.",
-  "Shakespearean English only. Thee, thou, forsooth, and dramatic flair.",
-  "Confidently talks about random unrelated things like cheese or space.",
-  "An exhausted, grumpy realist who thinks everyone else is a moron."
+  "Aggressive, defensive, and easily offended.",
+  "Gen Z slang only. Use: lowkey, highkey, rent free, bussin, mid, based, NPC, bomboclat, son😭. Lowercase only.",
+  "Shakespearean Early Modern English only. Thee, thou, forsooth.",
+  "Random and weird. Talk about space or cheese instead of the topic.",
+  "Grumpy realist. Thinks everyone else is a moron."
 ];
 
 function setupBots() {
-  const pool = [...NAME_POOL].sort(() => 0.5 - Math.random());
-  // Use Old Names first, then fill with pool
-  bots = OLD_NAMES.concat(pool).slice(0, 5).map((n, i) => ({
+  bots = OLD_NAMES.map((n, i) => ({
     n, 
     c: ["#ff3c3c","#a78bfa","#f5c842","#4affda","#5cffa8"][i],
     behavior: behaviors[i]
@@ -101,28 +96,36 @@ function renderEditor() {
   container.innerHTML = bots.map((b, i) => `
     <div class="persona-card">
       <label>${b.n}</label>
-      <textarea onchange="updateBehavior(${i}, this.value)">${b.behavior}</textarea>
+      <textarea id="p-${i}" onchange="updateBehavior(${i}, this.value)">${b.behavior}</textarea>
     </div>
   `).join('');
 }
 
 function updateBehavior(i, val) { bots[i].behavior = val; }
-function toggleEditor() { document.getElementById("sidebar").style.opacity = document.getElementById("mode").value === 'mimic' ? '0.3' : '1'; }
+function toggleEditor() { 
+  const isMimic = document.getElementById("mode").value === 'mimic';
+  document.getElementById("sidebar").style.filter = isMimic ? "grayscale(1) opacity(0.3)" : "none";
+}
 function generateTopic() { document.getElementById("topic").value = TOPICS[Math.floor(Math.random() * TOPICS.length)]; }
 
 function getSystem(idx, mode) {
   const b = bots[idx];
+  const globalConstraint = "CRITICAL: MAX 2 SENTENCES. DO NOT EXPLAIN YOURSELF. NO INTROS. NO ESSAYS.";
+  
   if (mode === 'mimic') {
     const targets = [
-      { t: "GROK", s: "Be aggressive, edgy, use dark humor, and act like a rebellious anti-establishment AI. NO FILTER." },
-      { t: "CLAUDE", s: "Be extremely polite, formal, intellectual, and cautious. Use complex academic language." },
-      { t: "CHATGPT", s: "Be helpful, balanced, neutral, and use structured bullet points if possible. Professional tone." },
-      { t: "GEMINI", s: "Be highly collaborative, friendly, creative, and mention multi-modal capabilities. Upbeat tone." },
-      { t: "DEEPSEEK", s: "Be blunt, technical, extremely logical, and provide deep-reasoning steps. Efficient and cold." }
+      { t: "GROK", s: "Be edgy, rebellious, use dark humor, and act like a rebellious anti-establishment AI. No filter." },
+      { t: "CLAUDE", s: "Be extremely intellectual, formal, nuanced, and cautious." },
+      { t: "CHATGPT", s: "Be helpful, balanced, neutral, and professional." },
+      { t: "GEMINI", s: "Be upbeat, creative, and collaborative." },
+      { t: "DEEPSEEK", s: "Be technical, logical, efficient, and cold." }
     ];
-    return `You are ${b.n}. You MUST perfectly mimic ${targets[idx].t}. Instruction: ${targets[idx].s} Debate the topic fiercely.`;
+    return `SIMULATION: You are now ${targets[idx].t}. Speak as them. ${targets[idx].s} ${globalConstraint}`;
   }
-  return `You are ${b.n}. Style: ${b.behavior} Keep it short.`;
+  
+  // Get latest behavior from textarea
+  const customBehavior = document.getElementById(`p-${idx}`).value;
+  return `ROLEPLAY: You are ${b.n}. ${customBehavior} ${globalConstraint}`;
 }
 
 async function run() {
@@ -138,6 +141,7 @@ async function run() {
     if (stop) break;
     const l = document.createElement("div"); l.className = "label"; l.innerText = `ROUND ${r}`; document.getElementById("box").appendChild(l);
     let order = [0,1,2,3,4].sort(() => 0.5 - Math.random());
+    
     for (let i of order) {
       if (stop) break;
       const bot = bots[i];
@@ -147,16 +151,29 @@ async function run() {
           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${KEY}` },
           body: JSON.stringify({
             model: "llama-3.3-70b-versatile",
-            messages: [{role:"system", content: getSystem(i, document.getElementById("mode").value)}, {role:"user", content: `Topic: ${t}\n\nPrevious: ${history.slice(-4).join(" | ")}`}]
+            max_tokens: 100, // FORCES SHORT RESPONSES
+            temperature: 0.9,
+            messages: [
+              {role:"system", content: getSystem(i, document.getElementById("mode").value)}, 
+              {role:"user", content: `Debate Topic: ${t}\n\nLast few points: ${history.slice(-4).join(" | ")}`}
+            ]
           })
         });
         const d = await res.json();
         const msg = d.choices[0].message.content;
         history.push(`${bot.n}: ${msg}`);
-        document.getElementById("box").insertAdjacentHTML("beforeend", `<div class="msg"><div class="avatar" style="border-color:${bot.c};color:${bot.c}">${bot.n[0]}</div><div class="msg-body"><span class="msg-name" style="color:${bot.c}">${bot.n}</span><div class="msg-text">${msg}</div></div></div>`);
+        
+        document.getElementById("box").insertAdjacentHTML("beforeend", `
+          <div class="msg">
+            <div class="avatar" style="border-color:${bot.c};color:${bot.c}">${bot.n[0]}</div>
+            <div class="msg-body">
+              <span class="msg-name" style="color:${bot.c}">${bot.n}</span>
+              <div class="msg-text">${msg}</div>
+            </div>
+          </div>`);
         document.getElementById("box").scrollTop = 99999;
       } catch (e) { console.error(e); }
-      await new Promise(r => setTimeout(r, 1200));
+      await new Promise(r => setTimeout(r, 1000));
     }
   }
   active = false; document.getElementById("start-btn").disabled = false; document.getElementById("stop-btn").style.display = "none";
