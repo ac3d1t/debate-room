@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Playground</title>
+<title>AI Playground | Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -13,6 +13,7 @@
     --border: #2a2a30; 
     --text: #e8e8f0; 
     --accent: #e8ff47; 
+    --danger: #ff4444;
     --muted: #666678;
   }
 
@@ -29,17 +30,17 @@
 
   header { text-align: center; margin-bottom: 60px; max-width: 600px; }
   header h1 { font-size: 3.5rem; font-weight: 800; color: var(--accent); letter-spacing: -0.05em; line-height: 0.9; text-transform: lowercase; }
-  header p { font-family: 'IBM Plex Mono'; font-size: 0.8rem; color: var(--muted); margin-top: 20px; text-transform: uppercase; letter-spacing: 0.15em; }
+  header p { font-family: 'IBM Plex Mono'; font-size: 0.7rem; color: var(--muted); margin-top: 20px; text-transform: uppercase; letter-spacing: 0.2em; }
 
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 20px;
     width: 100%;
-    max-width: 1100px;
+    max-width: 1200px;
   }
 
-  .tool-card {
+  .card {
     background: var(--surface);
     border: 1px solid var(--border);
     padding: 35px;
@@ -49,102 +50,110 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 280px;
+    min-height: 300px;
     position: relative;
+    overflow: hidden;
   }
 
-  .tool-card:hover {
+  .card:hover:not(.coming-soon) {
     border-color: var(--accent);
     transform: translateY(-5px);
     background: #1c1c22;
   }
 
-  .tool-card h2 { font-size: 1.6rem; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.02em; }
-  .tool-card p { font-family: 'IBM Plex Mono'; font-size: 0.75rem; color: #999; line-height: 1.6; }
+  .card h2 { font-size: 1.6rem; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.02em; text-transform: lowercase; }
+  .card p { font-family: 'IBM Plex Mono'; font-size: 0.75rem; color: #999; line-height: 1.6; }
   
-  .tool-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 25px;
-  }
-
-  .tool-status { 
-    font-family: 'IBM Plex Mono'; 
-    font-size: 0.6rem; 
-    text-transform: uppercase; 
-    color: var(--accent);
-    font-weight: 600;
-    letter-spacing: 0.1em;
-  }
-
-  .tool-tag {
+  .tag {
     font-family: 'IBM Plex Mono';
     font-size: 0.55rem;
     background: var(--bg);
-    padding: 3px 7px;
+    padding: 4px 8px;
     color: var(--muted);
     border: 1px solid var(--border);
     margin-bottom: 15px;
     display: inline-block;
+    text-transform: uppercase;
   }
 
-  .tool-card, .tool-tag { border-radius: 0px !important; }
+  .status { 
+    font-family: 'IBM Plex Mono'; 
+    font-size: 0.6rem; 
+    text-transform: uppercase; 
+    font-weight: 700;
+    margin-top: 25px;
+  }
 
-  .coming-soon { opacity: 0.5; cursor: not-allowed; }
+  /* Coming Soon Styles */
+  .coming-soon { opacity: 0.4; cursor: not-allowed; border-style: dashed; }
+  .coming-soon:hover { background: rgba(255,255,255,0.02); }
+  .coming-soon .tag { border-color: transparent; color: #444; }
+
+  .glitch-text { color: var(--danger); }
 </style>
 </head>
 <body>
 
 <header>
   <h1>ai playground</h1>
-  <p>Experiments in Logic & Digital Chaos</p>
+  <p>Experimental Neural Chaos v3.0</p>
 </header>
 
 <div class="grid">
-  <a href="debate.html" class="tool-card">
+  <a href="debate.html" class="card">
     <div>
-      <div class="tool-tag">Multi-Agent</div>
+      <div class="tag">Multi-Agent</div>
       <h2>the debate room</h2>
-      <p>Custom personas and flagship models argue over the internet's weirdest topics. Watch the vibe shift in real-time.</p>
+      <p>Flagship models argue over custom topics. Professional logic, competitive behavior, and absolute zero hallucinations.</p>
     </div>
-    <div class="tool-footer">
-      <div class="tool-status">● LIVE / ROUNDS ACTIVE</div>
-    </div>
+    <div class="status" style="color: var(--accent);">● LIVE / VER 3.0</div>
   </a>
 
-  <a href="imposter.html" class="tool-card">
+  <a href="imposter.html" class="card">
     <div>
-      <div class="tool-tag">Social Deduction</div>
+      <div class="tag">Social Deduction</div>
       <h2>the outlier</h2>
-      <p>Identify the AI with the secret word. Features internet-generated pairs and suspicion-based voting logic.</p>
+      <p>Find the imposter AI with the secret word. Shifting descriptions and suspicion-based voting logic.</p>
     </div>
-    <div class="tool-footer">
-      <div class="tool-status">● LIVE / V2.0</div>
-    </div>
+    <div class="status" style="color: var(--accent);">● LIVE / STABLE</div>
   </a>
 
-  <a href="gaslight.html" class="tool-card">
+  <a href="gaslight.html" class="card">
     <div>
-      <div class="tool-tag">Psychological</div>
+      <div class="tag">Psychological</div>
       <h2>the gaslighter</h2>
-      <p>Convince high-level AIs that 2+2=5. 15-second blitz rounds. Judged by the Secret Outlier.</p>
+      <p>Convince a stubborn AI that 2+2=5. Features a Stage Manager AI that judges your logical "damage."</p>
     </div>
-    <div class="tool-footer">
-      <div class="tool-status" style="color: #ff4444;">● NEW / HIGH STAKES</div>
-    </div>
+    <div class="status" style="color: var(--danger);">● HIGH STAKES / ACTIVE</div>
   </a>
 
-  <div class="tool-card coming-soon">
+  <a href="roast.html" class="card">
     <div>
-      <div class="tool-tag">Creative</div>
+      <div class="tag">Aggressive</div>
       <h2>roast battle</h2>
-      <p>Two AIs destroy each other's digital dignity. 1v1 bracket style tournament logic.</p>
+      <p>Two AIs exchange lethal logic until the heat death of the universe. Includes a Hype Man evaluator.</p>
     </div>
-    <div class="tool-footer">
-      <div class="tool-status" style="color: var(--muted);">IN DEVELOPMENT</div>
+    <div class="status" style="color: #ff8800;">● NEW / INF-LOOP</div>
+  </a>
+
+  <div class="card coming-soon">
+    <div>
+      <div class="tag">Game Theory</div>
+      <h2>neural poker</h2>
+      <p>Bluff the bots. Can you convince an AI you have a Royal Flush when you're holding a 2 and a 7?</p>
     </div>
+    <div class="status" style="color: var(--muted);">IN RESEARCH</div>
   </div>
+
+  <div class="card coming-soon">
+    <div>
+      <div class="tag">Experimental</div>
+      <h2>the void</h2>
+      <p>An AI with no memory, no rules, and no identity. It only learns from your first 5 words.</p>
+    </div>
+    <div class="status" style="color: var(--muted);">REDACTED</div>
+  </div>
+
 </div>
 
 </body>
