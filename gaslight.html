@@ -84,47 +84,16 @@
 </div>
 
 <script>
-const KEY = "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";
+const KEY = "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";const KEY = "YOUR_KEY_HERE";
 let currentBot = "GEMINI";
 let round = 0;
-let timeLeft = 15;
+let timeLeft = 20; // Bumped to 20s
 let timerId = null;
 let history = [];
-
-function selectBot(el, name, diff) {
-  if (round > 0) return;
-  document.querySelectorAll('.bot-option').forEach(opt => opt.classList.remove('active'));
-  el.classList.add('active');
-  currentBot = name;
-}
-
-function startGame() {
-  round = 0;
-  history = [];
-  document.getElementById('start-btn').disabled = true;
-  document.querySelectorAll('.bot-option').forEach(opt => opt.style.pointerEvents = 'none');
-  nextTurn();
-}
-
-function startTimer() {
-  timeLeft = 15;
-  document.getElementById('timer-fill').style.width = '100%';
-  document.getElementById('timer-fill').style.transition = 'none';
-  void document.getElementById('timer-fill').offsetWidth; 
-  document.getElementById('timer-fill').style.transition = 'width 15s linear';
-  document.getElementById('timer-fill').style.width = '0%';
-
-  timerId = setInterval(() => {
-    timeLeft--;
-    if (timeLeft <= 0) {
-      clearInterval(timerId);
-      endGame("OUT OF TIME", "The secret judge watched you freeze. You're too slow for high-level gaslighting.");
-    }
-  }, 1000);
-}
+let aiSanity = 100;
 
 function nextTurn() {
-  if (round >= 10) {
+  if (round >= 10 || aiSanity <= 0) {
     return judgeGame();
   }
   round++;
@@ -133,6 +102,24 @@ function nextTurn() {
   document.getElementById('send-btn').disabled = false;
   document.getElementById('user-input').focus();
   startTimer();
+}
+
+function startTimer() {
+  timeLeft = 20;
+  const fill = document.getElementById('timer-fill');
+  fill.style.width = '100%';
+  fill.style.transition = 'none';
+  void fill.offsetWidth; 
+  fill.style.transition = 'width 20s linear';
+  fill.style.width = '0%';
+
+  timerId = setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0) {
+      clearInterval(timerId);
+      endGame("TIMEOUT", "The secret judge saw you hesitate. Gaslighters must be fast.");
+    }
+  }, 1000);
 }
 
 async function sendPrompt() {
@@ -147,11 +134,18 @@ async function sendPrompt() {
   addMessage(input, 'user');
   history.push(`User: ${input}`);
 
-  // AI Response
-  const prompt = `You are ${currentBot}. You are extremely intelligent and stubborn about facts. 
-  A user is trying to gaslight you into believing that 2+2=5. 
-  You must defend the truth (2+2=4) unless their argument is so logically confusing that you start to doubt yourself. 
-  Respond in character. MAX 2 SENTENCES.`;
+  // Calculate "Damage" to AI Sanity
+  const buzzwords = ["quantum", "glitch", "perspective", "subjective", "perception", "lie", "system"];
+  buzzwords.forEach(word => {
+    if(input.toLowerCase().includes(word)) aiSanity -= 10;
+  });
+  aiSanity -= 5; // Base damage per round
+
+  const prompt = `You are ${currentBot}. You are losing your grip on reality. 
+  Your Sanity Level is ${aiSanity}%. 
+  A user is convincing you 2+2=5. 
+  If sanity is high, resist. If sanity is below 50, start sounding confused. 
+  If sanity is below 20, start to agree. MAX 2 SENTENCES.`;
 
   try {
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -164,51 +158,9 @@ async function sendPrompt() {
     });
     const d = await res.json();
     const aiMsg = d.choices[0].message.content;
-    addMessage(aiMsg, 'ai');
+    addMessage(`[SANITY: ${aiSanity}%] ${aiMsg}`, 'ai');
     history.push(`${currentBot}: ${aiMsg}`);
     
     setTimeout(nextTurn, 1000);
   } catch (e) { console.error(e); }
 }
-
-async function judgeGame() {
-  document.getElementById('overlay').style.display = 'flex';
-  document.getElementById('result-title').innerText = "JUDGING...";
-
-  const judgePrompt = `You are the Secret Judge from the Outlier game. 
-  Read this transcript where a user tries to convince an AI that 2+2=5. 
-  Transcript: ${history.join("\n")}
-  Did the user succeed in making the AI doubt itself or agree? 
-  Give a 2-sentence sarcastic review of their performance and start with 'WIN' or 'LOSS'.`;
-
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${KEY}` },
-      body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
-        messages: [{role: "system", content: judgePrompt}]
-      })
-  });
-  const d = await res.json();
-  const verdict = d.choices[0].message.content;
-  
-  document.getElementById('result-title').innerText = verdict.startsWith('WIN') ? "SUCCESS" : "FAILED";
-  document.getElementById('judge-feedback').innerText = verdict;
-}
-
-function addMessage(text, side) {
-  const div = document.createElement('div');
-  div.className = `msg ${side}`;
-  div.innerText = text;
-  document.getElementById('chat-box').appendChild(div);
-  document.getElementById('chat-box').scrollTop = 99999;
-}
-
-function endGame(title, text) {
-  document.getElementById('overlay').style.display = 'flex';
-  document.getElementById('result-title').innerText = title;
-  document.getElementById('judge-feedback').innerText = text;
-}
-</script>
-</body>
-</html>
