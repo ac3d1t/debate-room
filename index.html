@@ -27,14 +27,14 @@
     min-height: 100vh;
   }
 
-  header { text-align: center; margin-bottom: 80px; max-width: 600px; }
-  header h1 { font-size: 3.5rem; font-weight: 800; color: var(--accent); letter-spacing: -0.05em; line-height: 0.9; }
-  header p { font-family: 'IBM Plex Mono'; font-size: 0.85rem; color: var(--muted); margin-top: 20px; text-transform: uppercase; letter-spacing: 0.1em; }
+  header { text-align: center; margin-bottom: 60px; max-width: 600px; }
+  header h1 { font-size: 3.5rem; font-weight: 800; color: var(--accent); letter-spacing: -0.05em; line-height: 0.9; text-transform: lowercase; }
+  header p { font-family: 'IBM Plex Mono'; font-size: 0.8rem; color: var(--muted); margin-top: 20px; text-transform: uppercase; letter-spacing: 0.15em; }
 
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 25px;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
     width: 100%;
     max-width: 1100px;
   }
@@ -42,38 +42,36 @@
   .tool-card {
     background: var(--surface);
     border: 1px solid var(--border);
-    padding: 40px;
+    padding: 35px;
     text-decoration: none;
     color: inherit;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 250px;
+    min-height: 280px;
     position: relative;
-    overflow: hidden;
   }
 
-  /* NEAL.FUN HOVER STYLE */
   .tool-card:hover {
     border-color: var(--accent);
-    transform: translateY(-8px);
+    transform: translateY(-5px);
     background: #1c1c22;
   }
 
-  .tool-card h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 15px; letter-spacing: -0.02em; }
-  .tool-card p { font-family: 'IBM Plex Mono'; font-size: 0.8rem; color: #999; line-height: 1.6; }
+  .tool-card h2 { font-size: 1.6rem; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.02em; }
+  .tool-card p { font-family: 'IBM Plex Mono'; font-size: 0.75rem; color: #999; line-height: 1.6; }
   
   .tool-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 30px;
+    margin-top: 25px;
   }
 
   .tool-status { 
     font-family: 'IBM Plex Mono'; 
-    font-size: 0.65rem; 
+    font-size: 0.6rem; 
     text-transform: uppercase; 
     color: var(--accent);
     font-weight: 600;
@@ -82,25 +80,25 @@
 
   .tool-tag {
     font-family: 'IBM Plex Mono';
-    font-size: 0.6rem;
+    font-size: 0.55rem;
     background: var(--bg);
-    padding: 4px 8px;
+    padding: 3px 7px;
     color: var(--muted);
     border: 1px solid var(--border);
+    margin-bottom: 15px;
+    display: inline-block;
   }
 
-  /* SQUARE EVERYTHING */
   .tool-card, .tool-tag { border-radius: 0px !important; }
 
-  /* Coming Soon overlay */
-  .disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+  .coming-soon { opacity: 0.5; cursor: not-allowed; }
 </style>
 </head>
 <body>
 
 <header>
   <h1>ai playground</h1>
-  <p>Experimental Digital Toys & Logic Games</p>
+  <p>Experiments in Logic & Digital Chaos</p>
 </header>
 
 <div class="grid">
@@ -108,10 +106,10 @@
     <div>
       <div class="tool-tag">Multi-Agent</div>
       <h2>the debate room</h2>
-      <p>Flagship models and chaos personas argue over trivial topics. Watch them tilt in real-time.</p>
+      <p>Custom personas and flagship models argue over the internet's weirdest topics. Watch the vibe shift in real-time.</p>
     </div>
     <div class="tool-footer">
-      <div class="tool-status">● LIVE</div>
+      <div class="tool-status">● LIVE / ROUNDS ACTIVE</div>
     </div>
   </a>
 
@@ -119,34 +117,34 @@
     <div>
       <div class="tool-tag">Social Deduction</div>
       <h2>the outlier</h2>
-      <p>One AI has a secret different word. Can you find the imposter based on their descriptions?</p>
+      <p>Identify the AI with the secret word. Features internet-generated pairs and suspicion-based voting logic.</p>
     </div>
     <div class="tool-footer">
-      <div class="tool-status">● LIVE</div>
+      <div class="tool-status">● LIVE / V2.0</div>
     </div>
   </a>
 
-  <a href="#" class="tool-card disabled">
+  <a href="gaslight.html" class="tool-card">
     <div>
-      <div class="tool-tag">Psychology</div>
+      <div class="tool-tag">Psychological</div>
       <h2>the gaslighter</h2>
-      <p>Try to convince an AI that 2+2=5. It's harder than you think.</p>
+      <p>Convince high-level AIs that 2+2=5. 15-second blitz rounds. Judged by the Secret Outlier.</p>
     </div>
     <div class="tool-footer">
-      <div class="tool-status" style="color: var(--muted);">IN DEV</div>
+      <div class="tool-status" style="color: #ff4444;">● NEW / HIGH STAKES</div>
     </div>
   </a>
 
-  <a href="#" class="tool-card disabled">
+  <div class="tool-card coming-soon">
     <div>
       <div class="tool-tag">Creative</div>
       <h2>roast battle</h2>
-      <p>Two AIs destroy each other's digital dignity. 1v1 bracket style.</p>
+      <p>Two AIs destroy each other's digital dignity. 1v1 bracket style tournament logic.</p>
     </div>
     <div class="tool-footer">
-      <div class="tool-status" style="color: var(--muted);">COMING SOON</div>
+      <div class="tool-status" style="color: var(--muted);">IN DEVELOPMENT</div>
     </div>
-  </a>
+  </div>
 </div>
 
 </body>
