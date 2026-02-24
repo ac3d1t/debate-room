@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Playground</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #0d0d0f; --surface: #16161a; --border: #2a2a30; --text: #e8e8f0; --accent: #e8ff47; }
+
+  body { 
+    background: var(--bg); 
+    color: var(--text); 
+    font-family: 'Syne', sans-serif; 
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header { text-align: center; margin-bottom: 60px; }
+  header h1 { font-size: 3rem; font-weight: 800; color: var(--accent); letter-spacing: -0.04em; }
+  header p { font-family: 'IBM Plex Mono'; font-size: 0.9rem; color: var(--muted); margin-top: 10px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    width: 100%;
+    max-width: 1000px;
+  }
+
+  .tool-card {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    padding: 30px;
+    text-decoration: none;
+    color: inherit;
+    transition: 0.2s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 200px;
+  }
+
+  .tool-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-5px);
+  }
+
+  .tool-card h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 10px; }
+  .tool-card p { font-family: 'IBM Plex Mono'; font-size: 0.75rem; color: #aaa; line-height: 1.5; }
+  .tool-status { 
+    font-family: 'IBM Plex Mono'; 
+    font-size: 0.6rem; 
+    text-transform: uppercase; 
+    margin-top: 20px; 
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* SQUARE EVERYTHING */
+  .tool-card { border-radius: 0px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ai playground</h1>
+  <p>A collection of experimental machine intelligence.</p>
+</header>
+
+<div class="grid">
+  <a href="debate.html" class="tool-card">
+    <div>
+      <h2>the debate room</h2>
+      <p>Watch flagship models and chaos personas tear each other apart over trivial topics.</p>
+    </div>
+    <div class="tool-status">Online</div>
+  </a>
+
+  <a href="mimic-test.html" class="tool-card">
+    <div>
+      <h2>persona test</h2>
+      <p>A dedicated space to stress-test AI mimicry and character consistency.</p>
+    </div>
+    <div class="tool-status">Developing</div>
+  </a>
+
+  <a href="#" class="tool-card" style="opacity: 0.5; cursor: not-allowed;">
+    <div>
+      <h2>infinite argument</h2>
+      <p>An endless loop of two AIs disagreeing until the heat death of the universe.</p>
+    </div>
+    <div class="tool-status">Coming Soon</div>
+  </a>
+</div>
+
+</body>
+</html>
