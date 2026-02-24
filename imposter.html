@@ -3,44 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>the outlier</title>
+<title>the outlier | ai playground</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root { --bg: #0d0d0f; --surface: #16161a; --border: #2a2a30; --text: #e8e8f0; --accent: #e8ff47; --wrong: #ff4444; --muted: #666678; }
 
   body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Mono', monospace; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-  button, select { border-radius: 0px !important; cursor: pointer; font-family: 'Syne'; font-weight: 700; transition: 0.2s; border: none; }
+  button, select { border-radius: 0px !important; cursor: pointer; font-family: 'Syne'; font-weight: 700; transition: 0.2s; border: none; outline: none; }
 
   header { padding: 15px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-  header h1 { font-family: 'Syne'; font-size: 1.1rem; color: var(--accent); }
-  .back-link { color: var(--muted); text-decoration: none; font-size: 0.7rem; border: 1px solid var(--border); padding: 5px 10px; }
+  header h1 { font-family: 'Syne'; font-size: 1.1rem; color: var(--accent); letter-spacing: -0.05em; }
+  .back-link { color: var(--muted); text-decoration: none; font-size: 0.6rem; border: 1px solid var(--border); padding: 4px 8px; }
 
-  .game-container { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; overflow-y: auto; }
+  .game-container { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; }
   
-  #game-status { font-family: 'Syne'; font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; color: var(--accent); }
-  #round-info { font-size: 0.8rem; color: var(--muted); margin-bottom: 30px; }
+  #game-status { font-family: 'Syne'; font-size: 1.8rem; margin-bottom: 5px; text-transform: uppercase; font-weight: 800; }
+  #round-info { font-size: 0.7rem; color: var(--muted); margin-bottom: 25px; letter-spacing: 0.1em; }
 
-  .players-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; width: 100%; max-width: 1000px; }
+  .players-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; width: 100%; max-width: 1100px; }
   
   .player-card { 
     background: var(--surface); border: 1px solid var(--border); padding: 20px; 
-    text-align: left; position: relative; transition: 0.3s;
+    text-align: left; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
-  .player-card.eliminated { opacity: 0.3; filter: grayscale(1); pointer-events: none; border-color: transparent; }
-  .player-card.is-outlier { border-color: var(--accent) !important; box-shadow: 0 0 15px rgba(232, 255, 71, 0.2); }
+  .player-card.is-outlier { border-color: var(--accent); transform: scale(1.02); box-shadow: 0 0 20px rgba(232, 255, 71, 0.1); }
 
-  .p-name { display: block; font-family: 'Syne'; font-size: 0.8rem; font-weight: 800; margin-bottom: 8px; }
-  .p-desc { font-size: 0.75rem; color: #ccc; line-height: 1.4; min-height: 45px; margin-bottom: 10px; }
-  .p-vote { font-size: 0.65rem; color: var(--wrong); font-weight: 700; height: 1rem; }
+  .p-name { display: block; font-family: 'Syne'; font-size: 0.75rem; font-weight: 800; margin-bottom: 10px; text-transform: uppercase; }
+  .p-desc { font-size: 0.75rem; color: #bbb; line-height: 1.5; min-height: 50px; border-left: 2px solid #2a2a30; padding-left: 10px; margin-bottom: 10px; }
+  .p-vote { font-size: 0.6rem; color: var(--wrong); font-weight: 700; letter-spacing: 0.05em; }
 
-  .controls { margin-top: 40px; display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
-  .btn-main { background: var(--accent); color: #000; padding: 12px 25px; font-size: 0.8rem; }
-  .btn-main:disabled { opacity: 0.2; cursor: not-allowed; }
+  .controls { margin-top: auto; padding: 30px; display: flex; gap: 10px; background: linear-gradient(transparent, var(--bg)); width: 100%; justify-content: center; }
+  .btn-main { background: var(--accent); color: #000; padding: 12px 25px; font-size: 0.75rem; }
+  .btn-main:disabled { opacity: 0.2; }
   
   select.btn-main { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
-
-  #log { width: 100%; max-width: 1000px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px; font-size: 0.7rem; color: var(--muted); }
+  #log-box { width: 100%; max-width: 800px; font-size: 0.65rem; color: var(--muted); margin-top: 20px; line-height: 1.8; }
 </style>
 </head>
 <body>
@@ -51,163 +49,141 @@
 </header>
 
 <div class="game-container">
-  <div id="game-status">Press Start</div>
-  <div id="round-info">Select rounds and begin.</div>
+  <div id="game-status">STANDBY</div>
+  <div id="round-info">READY TO SCAN INTERNET FOR WORDS...</div>
   
   <div class="players-grid" id="grid"></div>
+  <div id="log-box"></div>
 
   <div class="controls">
     <select id="round-select" class="btn-main">
-      <option value="3">3 Rounds</option>
-      <option value="5" selected>5 Rounds</option>
-      <option value="10">10 Rounds</option>
+      <option value="3">3 ROUNDS</option>
+      <option value="5" selected>5 ROUNDS</option>
+      <option value="10">10 ROUNDS</option>
     </select>
-    <button id="start-btn" class="btn-main" onclick="initGame()">NEW GAME</button>
-    <button id="next-btn" class="btn-main" onclick="playRound()" disabled>NEXT ROUND</button>
+    <button id="start-btn" class="btn-main" onclick="initGame()">GENERATE & START</button>
+    <button id="next-btn" class="btn-main" onclick="playRound()" disabled>NEXT TURN</button>
   </div>
-
-  <div id="log"></div>
 </div>
 
 <script>
 const KEY = "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";
-const NAMES = ["GROK", "CLAUDE", "CHATGPT", "GEMINI", "DEEPSEEK"];
-const WORD_PAIRS = [
-  { r: "Coffee", f: "Gasoline", hint: "A strong-smelling liquid used for energy." },
-  { r: "Smartphone", f: "Remote Control", hint: "A handheld device used to control things." },
-  { r: "Gym", f: "Prison", hint: "A place where people are kept in specific rooms to sweat." }
+const BOT_DATA = [
+  { name: "GROK", color: "#ff3c3c", trait: "Edgy, cynical, uses 'NPC' and 'mid'." },
+  { name: "CLAUDE", color: "#a78bfa", trait: "Formal, overly-detailed, slightly nervous." },
+  { name: "CHATGPT", color: "#f5c842", trait: "Cheerful, corporate, uses 'delve' and 'tapestry'." },
+  { name: "GEMINI", color: "#4affda", trait: "Creative, uses emojis, tries too hard to be cool." },
+  { name: "DEEPSEEK", color: "#5cffa8", trait: "Blunt, robotic, extremely logical." }
 ];
 
-let state = {
-  active: false,
-  round: 0,
-  maxRounds: 5,
-  outlierIdx: -1,
-  players: [],
-  history: []
-};
+let state = { active: false, round: 0, maxRounds: 5, outlierIdx: -1, players: [], history: [], pair: {} };
 
-function initGame() {
-  const pair = WORD_PAIRS[Math.floor(Math.random() * WORD_PAIRS.length)];
+async function getInternetWords() {
+    document.getElementById('round-info').innerText = "GENERATING TRENDING WORD PAIR...";
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${KEY}` },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [{role: "system", content: "Generate a unique word pair for a social deduction game. One is a real word, one is a slightly different fake word. Format: {real:'word', fake:'word', hint:'shared category'}. Only return JSON."}]
+        })
+    });
+    const d = await res.json();
+    return JSON.parse(d.choices[0].message.content);
+}
+
+async function initGame() {
+  state.pair = await getInternetWords();
   state.outlierIdx = Math.floor(Math.random() * 5);
   state.maxRounds = parseInt(document.getElementById('round-select').value);
   state.round = 0;
   state.history = [];
-  state.active = true;
   
-  state.players = NAMES.map((n, i) => ({
-    name: n,
-    word: i === state.outlierIdx ? pair.f : pair.r,
-    hint: pair.hint, // Common ground
-    desc: "Waiting...",
+  state.players = BOT_DATA.map((b, i) => ({
+    ...b,
+    word: i === state.outlierIdx ? state.pair.fake : state.pair.real,
+    desc: "...",
     votedFor: null,
-    eliminated: false,
-    color: ["#ff3c3c","#a78bfa","#f5c842","#4affda","#5cffa8"][i]
+    eliminated: false
   }));
 
   document.getElementById('start-btn').disabled = true;
   document.getElementById('next-btn').disabled = false;
-  document.getElementById('game-status').innerText = "Game Started";
-  document.getElementById('log').innerHTML = "";
+  document.getElementById('game-status').innerText = "VOTING OPEN";
   playRound();
 }
 
 async function playRound() {
   if (state.round >= state.maxRounds) return endGame();
   state.round++;
-  document.getElementById('round-info').innerText = `Round ${state.round} of ${state.maxRounds}`;
+  document.getElementById('round-info').innerText = `ROUND ${state.round} / ${state.maxRounds} • CATEGORY: ${state.pair.hint}`;
   document.getElementById('next-btn').disabled = true;
 
-  // 1. GENERATE DESCRIPTIONS
   for (let i = 0; i < state.players.length; i++) {
-    if (state.players[i].eliminated) continue;
+    const p = state.players[i];
+    document.getElementById(`status-${i}`).innerText = "READING HISTORY...";
     
-    updateStatus(i, "thinking...");
-    const prompt = `You are playing 'The Outlier'. Your secret word is ${state.players[i].word}. 
-      The general category is: ${state.players[i].hint}.
-      OBJECTIVE: Describe your word in ONE VAGUE SENTENCE. 
-      If you are the Outlier, BLEND IN. You do not know the others words, so you will need to guess and rephrase your description without just blatantly lying. Do not be specific. 
-      If you are not the Outlier, be just specific enough so others know you have the right word, but don't give it away.
-      PREVIOUS DESCRIPTIONS: ${state.history.join(" | ")}`;
+    // NEW DYNAMIC DELAY (1.5s to 3.5s)
+    await new Promise(r => setTimeout(r, 1500 + Math.random() * 2000));
+
+    const prompt = `Game: The Outlier. Category: ${state.pair.hint}. Your word: ${p.word}.
+      PERSONALITY: ${p.trait}
+      OUTLIER STATUS: ${i === state.outlierIdx ? 'YES. BLEND IN.' : 'NO. FIND THE IMPOSTER.'}
+      HISTORY: ${state.history.slice(-5).join(" | ")}
+      TASK: One 10-word sentence describing the word without saying it. Stay in character.`;
 
     try {
       const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${KEY}` },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          max_tokens: 50,
-          messages: [{role: "system", content: prompt}]
-        })
+        body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{role: "system", content: prompt}] })
       });
       const d = await res.json();
-      state.players[i].desc = d.choices[0].message.content.replace(/"/g, '');
-      state.history.push(`${state.players[i].name}: ${state.players[i].desc}`);
+      p.desc = d.choices[0].message.content.replace(/"/g, '');
+      state.history.push(`${p.name}: ${p.desc}`);
       renderGrid();
-    } catch (e) { console.error(e); }
+    } catch (e) { p.desc = "Connection lost..."; }
+    document.getElementById(`status-${i}`).innerText = "READY";
   }
 
-  // 2. AI VOTING PHASE
-  await new Promise(r => setTimeout(r, 1000));
+  // AI SUSPICION LOGIC
   for (let i = 0; i < state.players.length; i++) {
-    if (state.players[i].eliminated) continue;
-    
-    const votePrompt = `Based on these descriptions, who is the Outlier? 
-      ${state.history.slice(-5).join("\n")}
-      Respond with ONLY the name of the person you suspect.`;
-
-    try {
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${KEY}` },
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile",
-          max_tokens: 10,
-          messages: [{role: "system", content: votePrompt}]
+          messages: [{role: "system", content: `History: ${state.history.join("\n")} \n WHO IS THE OUTLIER? Reply only with the Name.`}]
         })
-      });
-      const d = await res.json();
-      state.players[i].votedFor = d.choices[0].message.content.toUpperCase().trim();
-      renderGrid();
-    } catch (e) { console.error(e); }
+    });
+    const d = await res.json();
+    state.players[i].votedFor = d.choices[0].message.content.trim();
+    renderGrid();
   }
-
   document.getElementById('next-btn').disabled = false;
-  if (state.round === state.maxRounds) document.getElementById('next-btn').innerText = "REVEAL OUTLIER";
-}
-
-function updateStatus(i, txt) {
-  renderGrid();
-  const el = document.getElementById(`status-${i}`);
-  if(el) el.innerText = txt;
 }
 
 function renderGrid() {
   const grid = document.getElementById("grid");
   grid.innerHTML = state.players.map((p, i) => `
-    <div class="player-card ${p.eliminated ? 'eliminated' : ''}" id="card-${i}">
+    <div class="player-card" id="card-${i}">
       <span class="p-name" style="color:${p.color}">${p.name}</span>
       <div class="p-desc">"${p.desc}"</div>
-      <div class="p-vote">${p.votedFor ? 'VOTED FOR: ' + p.votedFor : ''}</div>
-      <div class="typing-status" id="status-${i}" style="font-size:0.6rem; color:var(--muted)"></div>
+      <div class="p-vote">${p.votedFor ? 'SUSPECTS: ' + p.votedFor : ''}</div>
+      <div id="status-${i}" style="font-size:0.55rem; color:var(--muted); margin-top:10px;">IDLE</div>
     </div>
   `).join('');
 }
 
 function endGame() {
-  state.active = false;
-  document.getElementById('game-status').innerText = "The Reveal";
+  document.getElementById('game-status').innerText = "RESULTS REVEALED";
+  document.getElementById(`card-${state.outlierIdx}`).classList.add('is-outlier');
+  document.getElementById('log-box').innerHTML = `OUTLIER: ${state.players[state.outlierIdx].name} | WORD WAS: ${state.pair.fake} (Real: ${state.pair.real})`;
   document.getElementById('next-btn').disabled = true;
   document.getElementById('start-btn').disabled = false;
-  
-  const outlier = state.players[state.outlierIdx];
-  document.getElementById(`card-${state.outlierIdx}`).classList.add('is-outlier');
-  
-  const log = document.getElementById('log');
-  log.innerHTML = `<h3>GAME OVER</h3>
-    <p>The Outlier was <strong>${outlier.name}</strong>.</p>
-    <p>Real Word: ${WORD_PAIRS[0].r} | Outlier Word: ${outlier.word}</p>`;
 }
+
+renderGrid();
 </script>
 </body>
 </html>
