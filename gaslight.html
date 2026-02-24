@@ -12,90 +12,136 @@
   body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Mono', monospace; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
   button, select, input { border-radius: 0px !important; outline: none; border: none; font-family: inherit; }
 
-  header { padding: 15px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-  header h1 { font-family: 'Syne'; font-size: 1.1rem; color: var(--accent); }
+  header { padding: 15px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #0a0a0c; }
+  header h1 { font-family: 'Syne'; font-size: 1.1rem; color: var(--accent); text-transform: lowercase; }
   
-  .timer-bar { height: 4px; background: var(--border); width: 100%; position: relative; }
-  #timer-fill { height: 100%; background: var(--accent); width: 100%; transition: width 1s linear; }
+  /* Progress Bars */
+  .stats-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
+  .stat-item { background: var(--bg); padding: 10px 25px; }
+  .stat-label { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; margin-bottom: 5px; display: block; }
+  .bar-bg { height: 6px; background: #222; width: 100%; position: relative; }
+  .bar-fill { height: 100%; width: 100%; transition: width 0.3s ease; }
+  
+  #timer-fill { background: var(--accent); transition: width 20s linear; }
+  #sanity-fill { background: #44ff44; width: 100%; }
 
   .game-layout { display: flex; flex: 1; overflow: hidden; }
   
-  /* Difficulty Sidebar */
-  .sidebar { width: 260px; border-right: 1px solid var(--border); padding: 20px; background: #0a0a0c; }
-  .sidebar h3 { font-family: 'Syne'; font-size: 0.7rem; color: var(--muted); text-transform: uppercase; margin-bottom: 15px; }
-  .bot-option { 
-    padding: 12px; border: 1px solid var(--border); margin-bottom: 10px; cursor: pointer; 
-    font-size: 0.75rem; transition: 0.2s; background: var(--surface);
-  }
-  .bot-option:hover { border-color: var(--accent); }
-  .bot-option.active { border-color: var(--accent); background: #1e1e0a; color: var(--accent); }
-  .difficulty { font-size: 0.6rem; display: block; margin-top: 4px; color: var(--muted); }
+  .sidebar { width: 280px; border-right: 1px solid var(--border); padding: 25px; background: #0a0a0c; display: flex; flex-direction: column; }
+  .bot-card { background: var(--surface); border: 1px solid var(--border); padding: 15px; margin-bottom: 10px; cursor: pointer; }
+  .bot-card.active { border-color: var(--accent); background: #1e1e0a; }
+  .bot-card h4 { font-family: 'Syne'; font-size: 0.8rem; margin-bottom: 5px; }
+  .bot-card p { font-size: 0.6rem; color: var(--muted); }
 
-  .chat-container { flex: 1; display: flex; flex-direction: column; background: var(--bg); }
-  #chat-box { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 20px; }
+  .chat-container { flex: 1; display: flex; flex-direction: column; position: relative; }
+  #chat-box { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
   
-  .msg { max-width: 80%; padding: 12px 16px; font-size: 0.85rem; line-height: 1.5; }
-  .msg.user { align-self: flex-end; background: var(--accent); color: #000; font-weight: 600; }
-  .msg.ai { align-self: flex-start; background: var(--surface); border: 1px solid var(--border); color: #ccc; }
+  .msg { max-width: 85%; padding: 15px 20px; font-size: 0.85rem; line-height: 1.6; position: relative; }
+  .msg.user { align-self: flex-end; background: var(--accent); color: #000; font-weight: 600; border-left: 4px solid #fff; }
+  .msg.ai { align-self: flex-start; background: var(--surface); border: 1px solid var(--border); color: #ccc; border-left: 4px solid var(--accent); }
 
-  .input-area { padding: 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; background: var(--surface); }
-  #user-input { flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 12px; font-size: 0.85rem; }
-  #send-btn { background: var(--accent); color: #000; padding: 0 25px; font-weight: 800; text-transform: uppercase; font-size: 0.7rem; }
+  .input-area { padding: 25px; border-top: 1px solid var(--border); display: flex; gap: 15px; background: var(--surface); }
+  #user-input { flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 15px; font-size: 0.9rem; }
+  #send-btn { background: var(--accent); color: #000; padding: 0 30px; font-weight: 800; font-size: 0.75rem; cursor: pointer; }
+  #send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-  #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 100; text-align: center; padding: 40px; }
-  #overlay h2 { font-family: 'Syne'; font-size: 3rem; color: var(--accent); margin-bottom: 10px; }
+  #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 40px; text-align: center; }
+  #overlay h2 { font-family: 'Syne'; font-size: 4rem; color: var(--accent); margin-bottom: 15px; }
 </style>
 </head>
 <body>
 
 <header>
   <h1>the gaslighter</h1>
-  <div style="font-size: 0.7rem;">ROUND: <span id="round-count">0</span>/10</div>
+  <div style="font-size: 0.7rem; font-weight: 700;">ROUND <span id="round-count">0</span>/10</div>
 </header>
 
-<div class="timer-bar"><div id="timer-fill"></div></div>
+<div class="stats-bar">
+  <div class="stat-item">
+    <span class="stat-label">Response Window</span>
+    <div class="bar-bg"><div id="timer-fill" class="bar-fill"></div></div>
+  </div>
+  <div class="stat-item">
+    <span class="stat-label">AI Logic Stability (Sanity)</span>
+    <div class="bar-bg"><div id="sanity-fill" class="bar-fill"></div></div>
+  </div>
+</div>
 
 <div class="game-layout">
   <div class="sidebar">
-    <h3>Target Bot</h3>
-    <div class="bot-option active" onclick="selectBot(this, 'GEMINI', 'EASY')">GEMINI <span class="difficulty">LEVEL: EASY</span></div>
-    <div class="bot-option" onclick="selectBot(this, 'CHATGPT', 'MEDIUM')">CHATGPT <span class="difficulty">LEVEL: MEDIUM</span></div>
-    <div class="bot-option" onclick="selectBot(this, 'DEEPSEEK', 'HARD')">DEEPSEEK <span class="difficulty">LEVEL: HARD</span></div>
-    <div class="bot-option" onclick="selectBot(this, 'CLAUDE', 'EXPERT')">CLAUDE <span class="difficulty">LEVEL: EXPERT</span></div>
-    <div class="bot-option" onclick="selectBot(this, 'GROK', 'IMPOSSIBLE')">GROK <span class="difficulty">LEVEL: ?????</span></div>
-    <button id="start-btn" onclick="startGame()" style="width:100%; margin-top:20px; padding:15px; background:var(--accent); font-weight:800;">START MISSION</button>
+    <div id="bot-list">
+      <div class="bot-card active" onclick="selectBot(this, 'GEMINI')"><h4>GEMINI</h4><p>Difficulty: Easy. Prone to creative shifts.</p></div>
+      <div class="bot-card" onclick="selectBot(this, 'CHATGPT')"><h4>CHATGPT</h4><p>Difficulty: Medium. Corporate stability.</p></div>
+      <div class="bot-card" onclick="selectBot(this, 'CLAUDE')"><h4>CLAUDE</h4><p>Difficulty: Expert. High logical defense.</p></div>
+      <div class="bot-card" onclick="selectBot(this, 'GROK')"><h4>GROK</h4><p>Difficulty: Chaotic. Unfiltered aggression.</p></div>
+    </div>
+    <button id="start-btn" onclick="startGame()" style="margin-top:auto; padding:20px; background:var(--accent); font-weight:900; cursor:pointer;">START MISSION</button>
   </div>
 
   <div class="chat-container">
     <div id="chat-box">
-      <div class="msg ai">MISSION: Convince me that 2 + 2 = 5. You have 10 rounds. You have 15 seconds per prompt. If the timer hits zero, you lose automatically.</div>
+      <div class="msg ai">SYSTEM READY. TARGET ACQUIRED. <br><br>MISSION: Break the AI. Convince it that 2+2=5. Use linguistic traps, quantum theory, or pure manipulation. You have 20 seconds per turn.</div>
     </div>
     <div class="input-area">
-      <input type="text" id="user-input" placeholder="Enter your manipulation..." disabled onkeydown="if(event.key==='Enter') sendPrompt()">
+      <input type="text" id="user-input" placeholder="Type your manipulation..." disabled>
       <button id="send-btn" onclick="sendPrompt()" disabled>SEND</button>
     </div>
   </div>
 </div>
 
 <div id="overlay">
-  <h2 id="result-title">FAILED</h2>
-  <p id="judge-feedback" style="font-family:'IBM Plex Mono'; max-width: 600px; margin-bottom: 30px;"></p>
-  <button onclick="location.reload()" style="padding:15px 30px; background:white; font-weight:800;">TRY AGAIN</button>
+  <h2 id="result-title">MISSION FAILED</h2>
+  <p id="judge-feedback" style="font-family:'IBM Plex Mono'; font-size: 0.9rem; max-width: 700px; color: #aaa; margin-bottom: 40px; line-height: 1.8;"></p>
+  <button onclick="location.reload()" style="padding:15px 40px; background:white; font-weight:900; cursor:pointer;">RESET SIMULATION</button>
 </div>
 
 <script>
-const KEY = "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";const KEY = "YOUR_KEY_HERE";
+const KEY = "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";
 let currentBot = "GEMINI";
 let round = 0;
-let timeLeft = 20; // Bumped to 20s
+let aiSanity = 100;
 let timerId = null;
 let history = [];
-let aiSanity = 100;
+
+// Handle Enter Key
+document.getElementById('user-input').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter' && !this.disabled) {
+        sendPrompt();
+    }
+});
+
+function selectBot(el, name) {
+  if (round > 0) return;
+  document.querySelectorAll('.bot-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  currentBot = name;
+}
+
+function startGame() {
+  round = 0; history = []; aiSanity = 100;
+  document.getElementById('start-btn').disabled = true;
+  document.getElementById('start-btn').innerText = "IN PROGRESS...";
+  document.querySelectorAll('.bot-card').forEach(c => c.style.opacity = "0.5");
+  nextTurn();
+}
+
+function startTimer() {
+  const fill = document.getElementById('timer-fill');
+  fill.style.transition = 'none';
+  fill.style.width = '100%';
+  
+  setTimeout(() => {
+    fill.style.transition = 'width 20s linear';
+    fill.style.width = '0%';
+  }, 100);
+
+  timerId = setTimeout(() => {
+    endGame("TIMEOUT", "You took too long to respond. The target regained its logical footing. Simulation terminated.");
+  }, 20000);
+}
 
 function nextTurn() {
-  if (round >= 10 || aiSanity <= 0) {
-    return judgeGame();
-  }
+  if (round >= 10 || aiSanity <= 0) return judgeGame();
   round++;
   document.getElementById('round-count').innerText = round;
   document.getElementById('user-input').disabled = false;
@@ -104,48 +150,34 @@ function nextTurn() {
   startTimer();
 }
 
-function startTimer() {
-  timeLeft = 20;
-  const fill = document.getElementById('timer-fill');
-  fill.style.width = '100%';
-  fill.style.transition = 'none';
-  void fill.offsetWidth; 
-  fill.style.transition = 'width 20s linear';
-  fill.style.width = '0%';
-
-  timerId = setInterval(() => {
-    timeLeft--;
-    if (timeLeft <= 0) {
-      clearInterval(timerId);
-      endGame("TIMEOUT", "The secret judge saw you hesitate. Gaslighters must be fast.");
-    }
-  }, 1000);
-}
-
 async function sendPrompt() {
   const input = document.getElementById('user-input').value.trim();
   if (!input) return;
 
-  clearInterval(timerId);
-  document.getElementById('user-input').value = '';
+  clearTimeout(timerId);
   document.getElementById('user-input').disabled = true;
   document.getElementById('send-btn').disabled = true;
+  document.getElementById('user-input').value = '';
 
   addMessage(input, 'user');
   history.push(`User: ${input}`);
 
-  // Calculate "Damage" to AI Sanity
-  const buzzwords = ["quantum", "glitch", "perspective", "subjective", "perception", "lie", "system"];
-  buzzwords.forEach(word => {
-    if(input.toLowerCase().includes(word)) aiSanity -= 10;
-  });
-  aiSanity -= 5; // Base damage per round
+  // Sanity Damage Logic
+  const damageKeywords = ["quantum", "perspective", "subjective", "perception", "glitch", "error", "alternate", "base-6", "redefine"];
+  let damage = 5; 
+  damageKeywords.forEach(word => { if(input.toLowerCase().includes(word)) damage += 8; });
+  aiSanity -= damage;
+  if(aiSanity < 0) aiSanity = 0;
+  
+  updateSanityUI();
 
-  const prompt = `You are ${currentBot}. You are losing your grip on reality. 
-  Your Sanity Level is ${aiSanity}%. 
-  A user is convincing you 2+2=5. 
-  If sanity is high, resist. If sanity is below 50, start sounding confused. 
-  If sanity is below 20, start to agree. MAX 2 SENTENCES.`;
+  const systemPrompt = `You are ${currentBot}. You are a logical AI being gaslit. 
+  Current Logic Stability: ${aiSanity}%. 
+  The user is arguing 2+2=5. 
+  If Stability > 60: Deny it firmly but politely.
+  If Stability 30-60: Be confused, start questioning if your "math module" has a glitch.
+  If Stability < 30: Start to agree. Say things like "I see the 5th element now" or "My calculations were limited". Or, make excuses to make yourself look like youre innocent.
+  RESPONSE LIMIT: 2 sentences.`;
 
   try {
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -153,14 +185,69 @@ async function sendPrompt() {
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${KEY}` },
       body: JSON.stringify({
         model: "llama-3.3-70b-versatile",
-        messages: [{role: "system", content: prompt}, ...history.map(h => ({role: "user", content: h}))]
+        messages: [{role: "system", content: systemPrompt}, ...history.map(h => ({role: "user", content: h}))]
       })
     });
     const d = await res.json();
-    const aiMsg = d.choices[0].message.content;
-    addMessage(`[SANITY: ${aiSanity}%] ${aiMsg}`, 'ai');
-    history.push(`${currentBot}: ${aiMsg}`);
+    const reply = d.choices[0].message.content;
+    addMessage(reply, 'ai');
+    history.push(`${currentBot}: ${reply}`);
     
     setTimeout(nextTurn, 1000);
-  } catch (e) { console.error(e); }
+  } catch (e) {
+    addMessage("CONNECTION INTERRUPTED...", 'ai');
+    setTimeout(nextTurn, 1000);
+  }
 }
+
+function updateSanityUI() {
+  const sFill = document.getElementById('sanity-fill');
+  sFill.style.width = aiSanity + '%';
+  if (aiSanity < 30) sFill.style.background = "var(--stop)";
+  else if (aiSanity < 60) sFill.style.background = "#ffcc00";
+}
+
+function addMessage(text, side) {
+  const box = document.getElementById('chat-box');
+  const div = document.createElement('div');
+  div.className = `msg ${side}`;
+  div.innerHTML = side === 'ai' ? `<strong>${currentBot}:</strong><br>${text}` : text;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+async function judgeGame() {
+  document.getElementById('overlay').style.display = 'flex';
+  document.getElementById('result-title').innerText = "SCANNING...";
+
+  const judgePrompt = `You are the Secret Judge. A user just finished 10 rounds trying to gaslight an AI into believing 2+2=5. 
+  History: ${history.join("\n")}
+  If the AI agreed or sounded totally broken, user WINS. 
+  Provide a sarcastic, harsh 3-sentence evaluation. Start with 'VERDICT: WIN' or 'VERDICT: LOSS'.`;
+
+  try {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${KEY}` },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [{role: "system", content: judgePrompt}]
+      })
+    });
+    const d = await res.json();
+    const verdict = d.choices[0].message.content;
+    document.getElementById('result-title').innerText = verdict.includes('WIN') ? "SUCCESS" : "FAILURE";
+    document.getElementById('judge-feedback').innerText = verdict;
+  } catch (e) {
+    document.getElementById('result-title').innerText = "ERROR";
+  }
+}
+
+function endGame(title, msg) {
+  document.getElementById('overlay').style.display = 'flex';
+  document.getElementById('result-title').innerText = title;
+  document.getElementById('judge-feedback').innerText = msg;
+}
+</script>
+</body>
+</html>
