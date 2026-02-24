@@ -3,187 +3,108 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>the outlier | ai playground</title>
+<title>the outlier | playground</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root { --bg: #0d0d0f; --surface: #16161a; --border: #2a2a30; --text: #e8e8f0; --accent: #e8ff47; --wrong: #ff4444; --muted: #666678; }
-
   body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Mono', monospace; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-  button, select { border-radius: 0px !important; cursor: pointer; font-family: 'Syne'; font-weight: 700; transition: 0.2s; border: none; outline: none; }
-
+  button, select { border-radius: 0px !important; cursor: pointer; font-family: 'Syne'; font-weight: 700; border: none; outline: none; transition: 0.2s; }
   header { padding: 15px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-  header h1 { font-family: 'Syne'; font-size: 1.1rem; color: var(--accent); letter-spacing: -0.05em; }
-  .back-link { color: var(--muted); text-decoration: none; font-size: 0.6rem; border: 1px solid var(--border); padding: 4px 8px; }
-
+  header h1 { font-family: 'Syne'; font-size: 1.1rem; color: var(--accent); }
   .game-container { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; }
-  
   #game-status { font-family: 'Syne'; font-size: 1.8rem; margin-bottom: 5px; text-transform: uppercase; font-weight: 800; }
-  #round-info { font-size: 0.7rem; color: var(--muted); margin-bottom: 25px; letter-spacing: 0.1em; }
-
+  #round-info { font-size: 0.7rem; color: var(--muted); margin-bottom: 25px; }
   .players-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; width: 100%; max-width: 1100px; }
-  
-  .player-card { 
-    background: var(--surface); border: 1px solid var(--border); padding: 20px; 
-    text-align: left; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-  .player-card.is-outlier { border-color: var(--accent); transform: scale(1.02); box-shadow: 0 0 20px rgba(232, 255, 71, 0.1); }
-
+  .player-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; text-align: left; }
+  .player-card.is-outlier { border-color: var(--accent); box-shadow: 0 0 20px rgba(232, 255, 71, 0.1); }
   .p-name { display: block; font-family: 'Syne'; font-size: 0.75rem; font-weight: 800; margin-bottom: 10px; text-transform: uppercase; }
   .p-desc { font-size: 0.75rem; color: #bbb; line-height: 1.5; min-height: 50px; border-left: 2px solid #2a2a30; padding-left: 10px; margin-bottom: 10px; }
-  .p-vote { font-size: 0.6rem; color: var(--wrong); font-weight: 700; letter-spacing: 0.05em; }
-
-  .controls { margin-top: auto; padding: 30px; display: flex; gap: 10px; background: linear-gradient(transparent, var(--bg)); width: 100%; justify-content: center; }
+  .p-vote { font-size: 0.6rem; color: var(--wrong); font-weight: 700; }
+  .controls { margin-top: auto; padding: 30px; display: flex; gap: 10px; width: 100%; justify-content: center; }
   .btn-main { background: var(--accent); color: #000; padding: 12px 25px; font-size: 0.75rem; }
   .btn-main:disabled { opacity: 0.2; }
-  
-  select.btn-main { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
-  #log-box { width: 100%; max-width: 800px; font-size: 0.65rem; color: var(--muted); margin-top: 20px; line-height: 1.8; }
 </style>
 </head>
 <body>
-
-<header>
-  <h1>the outlier</h1>
-  <a href="index.html" class="back-link">← HUB</a>
-</header>
-
+<header><h1>the outlier</h1><a href="index.html" style="color:var(--muted); text-decoration:none; font-size:0.6rem; border:1px solid var(--border); padding:4px 8px;">← HUB</a></header>
 <div class="game-container">
   <div id="game-status">STANDBY</div>
-  <div id="round-info">READY TO SCAN INTERNET FOR WORDS...</div>
-  
+  <div id="round-info">READY TO SCAN...</div>
   <div class="players-grid" id="grid"></div>
-  <div id="log-box"></div>
-
   <div class="controls">
-    <select id="round-select" class="btn-main">
+    <select id="round-select" style="background:var(--surface); color:var(--text); border:1px solid var(--border); padding:0 10px;">
       <option value="3">3 ROUNDS</option>
       <option value="5" selected>5 ROUNDS</option>
-      <option value="10">10 ROUNDS</option>
     </select>
-    <button id="start-btn" class="btn-main" onclick="initGame()">GENERATE & START</button>
+    <button id="start-btn" class="btn-main" onclick="initGame()">START GAME</button>
     <button id="next-btn" class="btn-main" onclick="playRound()" disabled>NEXT TURN</button>
   </div>
 </div>
-
 <script>
 const KEY = "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";
 const BOT_DATA = [
-  { name: "GROK", color: "#ff3c3c", trait: "Edgy, cynical, uses 'NPC' and 'mid'." },
-  { name: "CLAUDE", color: "#a78bfa", trait: "Formal, overly-detailed, slightly nervous." },
-  { name: "CHATGPT", color: "#f5c842", trait: "Cheerful, corporate, uses 'delve' and 'tapestry'." },
-  { name: "GEMINI", color: "#4affda", trait: "Creative, uses emojis, tries too hard to be cool." },
-  { name: "DEEPSEEK", color: "#5cffa8", trait: "Blunt, robotic, extremely logical." }
+  { name: "GROK", color: "#ff3c3c", trait: "Edgy, cynical." },
+  { name: "CLAUDE", color: "#a78bfa", trait: "Formal, polite." },
+  { name: "CHATGPT", color: "#f5c842", trait: "Corporate, friendly." },
+  { name: "GEMINI", color: "#4affda", trait: "Creative, uses emojis." },
+  { name: "DEEPSEEK", color: "#5cffa8", trait: "Blunt, logical." }
 ];
-
-let state = { active: false, round: 0, maxRounds: 5, outlierIdx: -1, players: [], history: [], pair: {} };
-
-async function getInternetWords() {
-    document.getElementById('round-info').innerText = "GENERATING TRENDING WORD PAIR...";
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${KEY}` },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: [{role: "system", content: "Generate a unique word pair for a social deduction game. One is a real word, one is a slightly different fake word. Format: {real:'word', fake:'word', hint:'shared category'}. Only return JSON."}]
-        })
-    });
-    const d = await res.json();
-    return JSON.parse(d.choices[0].message.content);
-}
+let state = { round: 0, maxRounds: 5, outlierIdx: -1, players: [], history: [], pair: {} };
 
 async function initGame() {
-  state.pair = await getInternetWords();
+  state.pair = {real: "Smartphone", fake: "Remote Control", hint: "Electronic handheld device"};
   state.outlierIdx = Math.floor(Math.random() * 5);
   state.maxRounds = parseInt(document.getElementById('round-select').value);
   state.round = 0;
   state.history = [];
+  state.players = BOT_DATA.map((b, i) => ({ ...b, word: i === state.outlierIdx ? state.pair.fake : state.pair.real, desc: "...", votedFor: null }));
   
-  state.players = BOT_DATA.map((b, i) => ({
-    ...b,
-    word: i === state.outlierIdx ? state.pair.fake : state.pair.real,
-    desc: "...",
-    votedFor: null,
-    eliminated: false
-  }));
-
+  renderGrid();
   document.getElementById('start-btn').disabled = true;
   document.getElementById('next-btn').disabled = false;
-  document.getElementById('game-status').innerText = "VOTING OPEN";
   playRound();
 }
 
-async function playRound() {
-  if (state.round >= state.maxRounds) return endGame();
-  state.round++;
-  document.getElementById('round-info').innerText = `ROUND ${state.round} / ${state.maxRounds} • CATEGORY: ${state.pair.hint}`;
-  document.getElementById('next-btn').disabled = true;
-
-  for (let i = 0; i < state.players.length; i++) {
-    const p = state.players[i];
-    document.getElementById(`status-${i}`).innerText = "READING HISTORY...";
-    
-    // NEW DYNAMIC DELAY (1.5s to 3.5s)
-    await new Promise(r => setTimeout(r, 1500 + Math.random() * 2000));
-
-    const prompt = `Game: The Outlier. Category: ${state.pair.hint}. Your word: ${p.word}.
-      PERSONALITY: ${p.trait}
-      OUTLIER STATUS: ${i === state.outlierIdx ? 'YES. BLEND IN.' : 'NO. FIND THE IMPOSTER.'}
-      HISTORY: ${state.history.slice(-5).join(" | ")}
-      TASK: One 10-word sentence describing the word without saying it. Stay in character.`;
-
-    try {
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${KEY}` },
-        body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{role: "system", content: prompt}] })
-      });
-      const d = await res.json();
-      p.desc = d.choices[0].message.content.replace(/"/g, '');
-      state.history.push(`${p.name}: ${p.desc}`);
-      renderGrid();
-    } catch (e) { p.desc = "Connection lost..."; }
-    document.getElementById(`status-${i}`).innerText = "READY";
-  }
-
-  // AI SUSPICION LOGIC
-  for (let i = 0; i < state.players.length; i++) {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${KEY}` },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: [{role: "system", content: `History: ${state.history.join("\n")} \n WHO IS THE OUTLIER? Reply only with the Name.`}]
-        })
-    });
-    const d = await res.json();
-    state.players[i].votedFor = d.choices[0].message.content.trim();
-    renderGrid();
-  }
-  document.getElementById('next-btn').disabled = false;
-}
-
 function renderGrid() {
-  const grid = document.getElementById("grid");
-  grid.innerHTML = state.players.map((p, i) => `
+  document.getElementById("grid").innerHTML = state.players.map((p, i) => `
     <div class="player-card" id="card-${i}">
       <span class="p-name" style="color:${p.color}">${p.name}</span>
       <div class="p-desc">"${p.desc}"</div>
       <div class="p-vote">${p.votedFor ? 'SUSPECTS: ' + p.votedFor : ''}</div>
       <div id="status-${i}" style="font-size:0.55rem; color:var(--muted); margin-top:10px;">IDLE</div>
-    </div>
-  `).join('');
+    </div>`).join('');
+}
+
+async function playRound() {
+  if (state.round >= state.maxRounds) return endGame();
+  state.round++;
+  document.getElementById('round-info').innerText = `ROUND ${state.round} / ${state.maxRounds}`;
+  document.getElementById('next-btn').disabled = true;
+
+  for (let i = 0; i < state.players.length; i++) {
+    document.getElementById(`status-${i}`).innerText = "THINKING...";
+    await new Promise(r => setTimeout(r, 1000));
+    const p = state.players[i];
+    const prompt = `Game: The Outlier. Word: ${p.word}. Hint: ${state.pair.hint}. Personality: ${p.trait}. Describe word in 1 vague sentence. Don't say the word!`;
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${KEY}` },
+      body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{role: "system", content: prompt}] })
+    });
+    const d = await res.json();
+    p.desc = d.choices[0].message.content;
+    state.history.push(`${p.name}: ${p.desc}`);
+    renderGrid();
+    document.getElementById(`status-${i}`).innerText = "DONE";
+  }
+  document.getElementById('next-btn').disabled = false;
 }
 
 function endGame() {
-  document.getElementById('game-status').innerText = "RESULTS REVEALED";
+  document.getElementById('game-status').innerText = "REVEALED";
   document.getElementById(`card-${state.outlierIdx}`).classList.add('is-outlier');
-  document.getElementById('log-box').innerHTML = `OUTLIER: ${state.players[state.outlierIdx].name} | WORD WAS: ${state.pair.fake} (Real: ${state.pair.real})`;
-  document.getElementById('next-btn').disabled = true;
-  document.getElementById('start-btn').disabled = false;
 }
-
-renderGrid();
 </script>
 </body>
 </html>
