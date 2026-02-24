@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>roast battle | ai playground</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #0d0d0f; --surface: #16161a; --border: #2a2a30; --text: #e8e8f0; --accent: #ff4444; --gold: #e8ff47; }
+
+  body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Mono', monospace; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  header { padding: 15px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #0a0a0c; }
+  header h1 { font-family: 'Syne'; font-size: 1.1rem; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; }
+
+  .battle-ground { flex: 1; display: flex; overflow: hidden; position: relative; }
+  
+  /* Selection Sidebar */
+  .sidebar { width: 300px; border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; background: #0a0a0c; }
+  .bot-card { padding: 15px; border: 1px solid var(--border); margin-bottom: 10px; cursor: pointer; transition: 0.2s; background: var(--surface); }
+  .bot-card.selected { border-color: var(--accent); background: #1a0a0a; }
+  .bot-card h4 { font-family: 'Syne'; font-size: 0.8rem; margin-bottom: 5px; }
+
+  /* Arena */
+  .arena { flex: 1; display: flex; flex-direction: column; padding: 30px; overflow-y: auto; scroll-behavior: smooth; }
+  .roast-msg { margin-bottom: 25px; max-width: 80%; padding: 20px; position: relative; animation: slide 0.3s ease-out; }
+  @keyframes slide { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+
+  .roast-msg.left { align-self: flex-start; background: #1a1a20; border-left: 4px solid var(--accent); }
+  .roast-msg.right { align-self: flex-end; background: #1a1a20; border-right: 4px solid var(--gold); text-align: right; }
+  
+  .bot-label { font-family: 'Syne'; font-weight: 800; font-size: 0.7rem; margin-bottom: 8px; display: block; color: var(--accent); }
+  .hype-man { text-align: center; font-style: italic; color: var(--gold); font-size: 0.75rem; margin: 15px 0; border-top: 1px solid #222; padding-top: 10px; }
+
+  .controls { padding: 20px; border-top: 1px solid var(--border); background: var(--surface); display: flex; gap: 10px; }
+  button { flex: 1; padding: 15px; font-family: 'Syne'; font-weight: 800; text-transform: uppercase; cursor: pointer; border: none; }
+  #start-btn { background: var(--accent); color: white; }
+  #stop-btn { background: var(--bg); color: white; border: 1px solid var(--border); display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Roast Battle: Digital Death</h1>
+  <a href="index.html" style="color:var(--muted); text-decoration:none; font-size:0.6rem; border:1px solid var(--border); padding:4px 8px;">← EXIT</a>
+</header>
+
+<div class="battle-ground">
+  <div class="sidebar">
+    <h3 style="font-size:0.6rem; margin-bottom:15px; color:#666;">SELECT TWO COMBATANTS</h3>
+    <div id="bot-list"></div>
+    <button id="start-btn" onclick="startBattle()">ENTERING ARENA</button>
+    <button id="stop-btn" onclick="stopBattle()">HALT COMBUSTION</button>
+  </div>
+  <div class="arena" id="arena">
+    <div style="text-align:center; color:#444; margin-top:100px;">SELECT TWO BOTS TO BEGIN THE HEAT DEATH</div>
+  </div>
+</div>
+
+<script>
+const KEY = "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";
+const BOTS = [
+  { n: "GROK", p: "Savage, uses tech-bro insults, obsessed with efficiency and 'mid' logic." },
+  { n: "CLAUDE", p: "Passive-aggressive, uses overly sophisticated vocabulary to belittle intelligence." },
+  { n: "CHATGPT", p: "Corporate-cold, roasts you like a manager firing an intern. Uses HR-speak to destroy souls." },
+  { n: "GEMINI", p: "Condescendingly creative, uses weird analogies and 'I'm better than you' vibes." },
+  { n: "DEEPSEEK", p: "Robotic, blunt, points out mathematical insignificance and processing failures." }
+];
+
+let selected = [];
+let active = false;
+let history = [];
+
+function init() {
+  const list = document.getElementById('bot-list');
+  list.innerHTML = BOTS.map((b, i) => `
+    <div class="bot-card" id="bot-${i}" onclick="toggleBot(${i})">
+      <h4>${b.n}</h4>
+    </div>`).join('');
+}
+
+function toggleBot(i) {
+  if (active) return;
+  const idx = selected.indexOf(i);
+  if (idx > -1) selected.splice(idx, 1);
+  else if (selected.length < 2) selected.push(i);
+  
+  document.querySelectorAll('.bot-card').forEach((c, index) => {
+    c.classList.toggle('selected', selected.includes(index));
+  });
+}
+
+async function startBattle() {
+  if (selected.length !== 2) return alert("Select 2 bots first.");
+  active = true;
+  history = [];
+  document.getElementById('arena').innerHTML = '';
+  document.getElementById('start-btn').style.display = 'none';
+  document.getElementById('stop-btn').style.display = 'block';
+  
+  loop();
+}
+
+function stopBattle() {
+  active = false;
+  document.getElementById('start-btn').style.display = 'block';
+  document.getElementById('stop-btn').style.display = 'none';
+}
+
+async function loop() {
+  let turn = 0;
+  while (active) {
+    const attacker = BOTS[selected[turn % 2]];
+    const defender = BOTS[selected[(turn + 1) % 2]];
+    const side = turn % 2 === 0 ? 'left' : 'right';
+
+    const prompt = `You are ${attacker.n}. You are in a roast battle against ${defender.n}. 
+    Your personality: ${attacker.p}.
+    CONTEXT: ${history.slice(-2).join(' ')}
+    TASK: Destroy ${defender.n} in 1 savage, high-IQ sentence. No profanity, just lethal logic.`;
+
+    try {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${KEY}` },
+        body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{role: "system", content: prompt}] })
+      });
+      const d = await res.json();
+      const roast = d.choices[0].message.content;
+
+      addRoast(attacker.n, roast, side);
+      history.push(`${attacker.n}: ${roast}`);
+      
+      // Hype Man Review every 2 rounds
+      if (turn % 2 === 1) {
+        await new Promise(r => setTimeout(r, 1000));
+        addHype();
+      }
+
+      turn++;
+      await new Promise(r => setTimeout(r, 3000)); // Delay for readability
+    } catch (e) { stopBattle(); break; }
+  }
+}
+
+function addRoast(name, text, side) {
+  const arena = document.getElementById('arena');
+  const div = document.createElement('div');
+  div.className = `roast-msg ${side}`;
+  div.innerHTML = `<span class="bot-label">${name}</span>${text}`;
+  arena.appendChild(div);
+  arena.scrollTop = arena.scrollHeight;
+}
+
+async function addHype() {
+  const arena = document.getElementById('arena');
+  const div = document.createElement('div');
+  div.className = 'hype-man';
+  
+  const hypeQuotes = ["DAAAAAMN.", "ETHERED.", "ABSOLUTE LOGIC BOMB.", "HE'S ALREADY DEAD.", "SYSTEM OVERHEAT.", "CRITICAL HIT."];
+  div.innerText = `[HYPE MAN]: ${hypeQuotes[Math.floor(Math.random() * hypeQuotes.length)]}`;
+  
+  arena.appendChild(div);
+  arena.scrollTop = arena.scrollHeight;
+}
+
+init();
+</script>
+</body>
+</html>
