@@ -8,127 +8,63 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root { --bg: #0d0d0f; --surface: #16161a; --border: #2a2a30; --text: #e8e8f0; --muted: #666678; --accent: #e8ff47; --stop: #ff4444; }
-
   body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Mono', monospace; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-  input, select, button, .avatar, .persona-card { border-radius: 0px !important; }
-
+  input, select, button, .avatar { border-radius: 0px !important; }
   header { padding: 15px 25px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
   header h1 { font-family: 'Syne'; font-weight: 800; font-size: 1.1rem; color: var(--accent); }
-
   .vibe-container { font-size: 0.65rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
   #vibe-meter { color: #44ff44; text-transform: uppercase; }
-
   .topic-bar { padding: 15px 25px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; background: var(--surface); align-items: center; z-index: 10; }
   .mode-select { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px; font-size: 0.75rem; cursor: pointer; outline: none; }
   .topic-bar input { flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; outline: none; }
   .topic-bar button { background: var(--accent); color: #000; border: none; font-weight: 700; padding: 8px 15px; cursor: pointer; font-family: 'Syne'; }
   #stop-btn { background: var(--stop); color: #fff; display: none; }
-
   .main-container { display: flex; flex: 1; overflow: hidden; }
-  .editor-sidebar { width: 300px; border-right: 1px solid var(--border); padding: 20px; overflow-y: auto; background: #0a0a0c; transition: opacity 0.3s; }
-  .persona-card { background: var(--surface); border: 1px solid var(--border); padding: 12px; margin-bottom: 12px; }
-  .persona-card label { font-size: 0.65rem; color: var(--accent); display: block; margin-bottom: 5px; font-weight: 700; }
-  .persona-card textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: #ccc; font-size: 0.7rem; padding: 5px; height: 65px; outline: none; resize: none; font-family: inherit; }
-
   .chat-area { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; scroll-behavior: smooth; }
   .msg { display: flex; gap: 15px; padding: 20px 0; border-bottom: 1px solid #1c1c22; animation: fade 0.3s ease; }
   @keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-  
   .avatar { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-weight: 800; border: 1px solid; flex-shrink: 0; font-size: 0.7rem; }
   .msg-name { font-family: 'Syne'; font-weight: 700; font-size: 0.8rem; margin-bottom: 4px; display: block; }
   .msg-text { font-size: 0.85rem; line-height: 1.6; color: #ccc; }
-
   .typing-indicator { font-size: 0.7rem; color: var(--accent); margin: 10px 0; font-style: italic; display: none; border-left: 2px solid var(--accent); padding-left: 10px; }
   .label { text-align: center; font-size: 0.6rem; color: var(--muted); padding: 20px 0; text-transform: uppercase; letter-spacing: 0.2em; border-top: 1px solid #1c1c22; margin-top: 10px; }
+  .error-box { background: rgba(255, 68, 68, 0.1); border: 1px solid var(--stop); padding: 15px; color: var(--stop); font-size: 0.75rem; margin: 10px 0; }
 </style>
 </head>
 <body>
 
 <header>
-  <div style="display: flex; align-items: center; gap: 15px;">
-    <a href="index.html" style="font-size: 0.6rem; color: var(--muted); text-decoration: none; border: 1px solid var(--border); padding: 4px 8px;">← HUB</a>
-    <h1>the debate room</h1>
-  </div>
+  <h1>the debate room</h1>
   <div class="vibe-container">VIBE: <span id="vibe-meter">CHILL</span></div>
 </header>
 
 <div class="topic-bar">
-  <select id="mode" class="mode-select" onchange="toggleEditor()">
-    <option value="chaos">Chaos Mode</option>
+  <select id="mode" class="mode-select">
     <option value="mimic">AI Mimicry</option>
+    <option value="chaos">Chaos Mode</option>
   </select>
-  <button onclick="generateTopic()" style="background:var(--border); color:var(--text); font-size:0.7rem;">Topic Gen</button>
-  <input type="text" id="topic" placeholder="Is GLORP a god? Enter topic..." />
+  <input type="text" id="topic" placeholder="Type a spicy topic..." />
   <button id="start-btn" onclick="run()">Start</button>
   <button id="stop-btn" onclick="halt()">Stop</button>
 </div>
 
 <div class="main-container">
-  <div class="editor-sidebar" id="sidebar">
-    <div id="persona-fields"></div>
-  </div>
   <div class="chat-area" id="box">
     <div id="typing-status" class="typing-indicator"></div>
   </div>
 </div>
 
 <script>
-const KEY = "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"; // <-- PUT YOUR KEY HERE
-
-const OLD_NAMES = ["KAEL", "ZYLA", "BARD", "GLORP", "SOLEN"];
-const MIMIC_NAMES = ["GROK", "CLAUDE", "CHATGPT", "GEMINI", "DEEPSEEK"];
-const TOPICS = ["Is water wet?", "Cereal is soup.", "Hot dogs are sandwiches.", "Batman vs Superman.", "Is the moon real?"];
-
-let active = false, stop = false, history = [], bots = [], toxicity = 0;
-
-let defaultBehaviors = [
-  "Aggressive, defensive, and easily offended.",
-  "Gen Z slang. Use: lowkey, highkey, mid, based, bomboclat. lowercase only.",
-  "Shakespearean English only. Dramatic prose.",
-  "Random/Weird. Pivot to talking about cheese or space.",
-  "Grumpy realist. Everyone else is a moron."
-];
-
-function setupBots() {
-  bots = OLD_NAMES.map((n, i) => ({ n, c: ["#ff3c3c","#a78bfa","#f5c842","#4affda","#5cffa8"][i], behavior: defaultBehaviors[i] }));
-  renderEditor();
-}
-
-function renderEditor() {
-  document.getElementById("persona-fields").innerHTML = bots.map((b, i) => `
-    <div class="persona-card"><label>${b.n}</label><textarea id="p-${i}">${b.behavior}</textarea></div>`).join('');
-}
-
-function toggleEditor() { document.getElementById("sidebar").style.opacity = document.getElementById("mode").value === 'mimic' ? '0.2' : '1'; }
-function generateTopic() { document.getElementById("topic").value = TOPICS[Math.floor(Math.random()*TOPICS.length)]; }
+const KEY = "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"; 
+const MIMIC_NAMES = ["DEEPSEEK", "CHATGPT", "GROK", "GEMINI", "CLAUDE"];
+let active = false, stop = false, history = [], toxicity = 0;
 
 function updateVibe(msg) {
-  const spicyWords = ["mid", "based", "idiot", "dumb", "?????", "gtfo", "lmao", "NPC", "trash"];
-  spicyWords.forEach(w => { if(msg.toLowerCase().includes(w.toLowerCase())) toxicity += 5; });
-  
-  const meter = document.getElementById("vibe-meter");
-  if (toxicity < 10) { meter.innerText = "CHILL"; meter.style.color = "#44ff44"; }
-  else if (toxicity < 30) { meter.innerText = "HEATED"; meter.style.color = "#ffcc00"; }
-  else { meter.innerText = "STRAIGHT TOXIC"; meter.style.color = "#ff4444"; }
-}
-
-function getSystem(idx, mode, topic) {
-  const isMimic = mode === 'mimic';
-  const name = isMimic ? MIMIC_NAMES[idx] : bots[idx].n;
-  
-  let godRule = topic.toUpperCase().includes(name.toUpperCase()) ? `TOPIC GOD: Start with "Woah, the topic gods have chosen me! Woo hoo!"` : "";
-
-  const reactionLogic = `
-    IMPORTANT: Do not be polite. If someone says something stupid, react with "?????" or "LMAO" or "Wait, what?". 
-    Never start with "I agree." Instead, say "True," or "Actually based," or "?????".
-    MAX 2 SENTENCES. Address others by name.
-  `;
-  
-  if (isMimic) {
-    const targets = [{t:"GROK",s:"Edgy, unfiltered."}, {t:"CLAUDE",s:"Formal, intellectual."}, {t:"CHATGPT",s:"Balanced."}, {t:"GEMINI",s:"Creative."}, {t:"DEEPSEEK",s:"Technical/Cold."}];
-    return `You are ${targets[idx].t}. ${targets[idx].s} ${godRule} ${reactionLogic}`;
-  }
-  return `You are ${bots[idx].n}. ${document.getElementById(`p-${idx}`).value} ${godRule} ${reactionLogic}`;
+    const spicy = ["???", "LMAO", "moron", "trash", "mid", "NPC", "gtfo"];
+    spicy.forEach(w => { if(msg.includes(w)) toxicity += 4; });
+    const meter = document.getElementById("vibe-meter");
+    meter.innerText = toxicity > 30 ? "STRAIGHT TOXIC" : toxicity > 10 ? "HEATED" : "CHILL";
+    meter.style.color = toxicity > 30 ? "var(--stop)" : toxicity > 10 ? "#ffcc00" : "#44ff44";
 }
 
 async function run() {
@@ -140,20 +76,19 @@ async function run() {
   document.getElementById("stop-btn").style.display = "block";
   document.getElementById("box").innerHTML = '<div id="typing-status" class="typing-indicator"></div>';
 
-  for (let r = 1; r <= 3; r++) {
+  for (let r = 1; r <= 2; r++) {
     if (stop) break;
     document.getElementById("box").insertAdjacentHTML("beforeend", `<div class="label">ROUND ${r}</div>`);
-    let order = [0,1,2,3,4].sort(() => 0.5 - Math.random());
-    for (let i of order) {
+    for (let i = 0; i < 5; i++) {
       if (stop) break;
-      const name = (document.getElementById("mode").value === 'mimic') ? MIMIC_NAMES[i] : bots[i].n;
+      const name = MIMIC_NAMES[i];
       const typing = document.getElementById("typing-status");
-      typing.innerText = `${name} is typing...`;
+      typing.innerText = `${name} is thinking...`;
       typing.style.display = "block";
       document.getElementById("box").appendChild(typing);
       document.getElementById("box").scrollTop = 99999;
 
-      await new Promise(res => setTimeout(res, 2000 + Math.random() * 2000));
+      await new Promise(res => setTimeout(res, 2000));
 
       try {
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -161,16 +96,33 @@ async function run() {
           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${KEY}` },
           body: JSON.stringify({
             model: "llama-3.3-70b-versatile",
-            max_tokens: 100,
-            messages: [{role:"system", content: getSystem(i, document.getElementById("mode").value, t)}, {role:"user", content: `History:\n${history.slice(-5).join("\n")}\n\nRespond to the topic: ${t}`}]
+            max_tokens: 80,
+            messages: [
+                {role:"system", content: `You are ${name}. Be aggressive, disagree with others. No formal intros. MAX 2 SENTENCES.`},
+                {role:"user", content: `Topic: ${t}\n\nChat:\n${history.slice(-3).join("\n")}`}
+            ]
           })
         });
-        const d = await res.json();
-        const msg = d.choices[0].message.content;
+
+        const data = await res.json();
+        
+        // ERROR HANDLING FIX
+        if (!data.choices || !data.choices[0]) {
+            const errorText = data.error ? data.error.message : "API response was empty.";
+            document.getElementById("box").insertAdjacentHTML("beforeend", `<div class="error-box">ERROR: ${errorText}</div>`);
+            continue;
+        }
+
+        const msg = data.choices[0].message.content;
         typing.style.display = "none";
         history.push(`${name}: ${msg}`);
         updateVibe(msg);
-        document.getElementById("box").insertAdjacentHTML("beforeend", `<div class="msg"><div class="avatar" style="border-color:${bots[i].c};color:${bots[i].c}">${name[0]}</div><div class="msg-body"><span class="msg-name" style="color:${bots[i].c}">${name}</span><div class="msg-text">${msg}</div></div></div>`);
+        
+        document.getElementById("box").insertAdjacentHTML("beforeend", `
+            <div class="msg">
+                <div class="avatar" style="border-color:#5cffa8;color:#5cffa8">${name[0]}</div>
+                <div class="msg-body"><span class="msg-name">${name}</span><div class="msg-text">${msg}</div></div>
+            </div>`);
         document.getElementById("box").scrollTop = 99999;
       } catch (e) { console.error(e); }
     }
@@ -178,8 +130,7 @@ async function run() {
   active = false; document.getElementById("start-btn").disabled = false; document.getElementById("stop-btn").style.display = "none";
 }
 
-function halt() { stop = true; document.getElementById("typing-status").style.display = "none"; }
-setupBots();
+function halt() { stop = true; }
 </script>
 </body>
 </html>
